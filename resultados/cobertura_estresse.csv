@@ -1,0 +1,4 @@
+metodo,cob_estresse_mc_pct,cob_estresse_exata_pct,min_curva_T100_pct
+wald,62.8,62.74,63.34
+wilson,96.0,95.91,92.06
+clopper_pearson,99.0,99.04,95.18

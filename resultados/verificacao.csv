@@ -1,0 +1,19 @@
+item,descricao,valor,criterio,passou
+1,convenção de sinal,"525/475 dá +0.05, trocando dá -0.05",igualdade,sim
+2,casos feitos à mão,"(3,1) (7,7) (5,0) (0,0)","igualdade; (0,0) indefinido",sim
+3,total = média ponderada por T_i,maior diferença 3.469446951953614e-18,< 1e-12,sim
+4,soma dos mu = N_exp e A_total esperado,mu-=525 e mu+=475 no exemplo,igualdade,sim
+5,"média e variância das contagens (global, N=1e4)",fora do critério: 0 de 40,<= 2,sim
+6,viés de A_i e do total,fora de 3 sigma: 0 de 99,<= 2,sim
+7,dispersão contra sqrt((1-A^2)/T),fora de 5%: 1 de 99,<= 2,sim
+8,escala 1/raiz(N): desvio(1e3)/desvio(1e5),"[9.76, 10.17, 10.04]",perto de 10 (+-1),sim
+9,Wilson e Clopper-Pearson contra o scipy,maior diferença 2.220446049250313e-14,< 1e-9,sim
+10,casos extremos,"T=0, k=0, k=n, limites em [-1, 1]",sem divisão por zero,sim
+11,cobertura monte carlo contra soma exata,fora de 3 sigma: 0 de 54,<= 4,sim
+12,falso positivo e poder (MC contra exato),fora de 3 sigma: 0 de 18,<= 2,sim
+13,compensação local (N=1e4),"total rejeita 0.046, chi2_hom rejeita 1.0",total ~ falso positivo; chi2_hom ~ 1,sim
+14,chi2_hom = chi2 de Pearson 2xk,maior diferença 5.684341886080802e-14,< 1e-8,sim
+15,"A_obs = (A + a)/(1 + A a), sem efeito físico e a=-0.02","significância aparente [-0.66, -1.96, -6.32]","viés = a antes de corrigir, zero depois",sim
+16,reprodutibilidade (mesma semente),dois sorteios de 50 repetições,igualdade exata,sim
+17,EMV binomial = k/n e 1/I = p(1-p)/n,diferenças 8.159780573446795e-09 e 4.1813107642951763e-08,< 1e-6,sim
+23,inclinação de log(sigma) contra log(N) em 4 pontos (F5),"[-0.4936, -0.5054, -0.502]",-0.5 +- 0.02,sim

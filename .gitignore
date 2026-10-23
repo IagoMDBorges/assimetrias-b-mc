@@ -1,0 +1,8 @@
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+
+# Arquivos de sistema e editores
+Thumbs.db
+.DS_Store
+.vscode/

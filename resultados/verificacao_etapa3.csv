@@ -1,0 +1,6 @@
+item,descricao,valor,criterio,passou
+18,pesos somam 1 e não mudam com mais passos,"soma 1.0, maior mudança 4.4153453439971235e-06","soma = 1, mudança < 1e-4",sim
+19,largura ótima b*/s (bisseção e varredura),"b*/s = 2.8, varredura 2.79",perto de 2.8,sim
+20,pesos do espaço de fase x histograma das posições,maior desvio 2.05 sigma,< 4,sim
+21,"conservação de E e p, massas, s12 e s23 recalculados",maior erro 3.197442310920451e-14,< 1e-9,sim
+22,"nulo (A = 0): S ~ N(0,1) e p uniforme","média 0.005, desvio 0.991, p<0.05 em 7 de 100","média ~ 0, desvio ~ 1",sim
