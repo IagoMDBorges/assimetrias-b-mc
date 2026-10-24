@@ -23,7 +23,7 @@ No cenário `compensacao`, as regiões 1 a 5 têm assimetria +0,10 e as regiões
 
 Com N = 10 000, o histograma do total (verde) fica centrado em zero e o teste binomial global rejeita H0 em 4,6 ± 0,5 % das vezes (compatível com o falso positivo nominal de 5 %). Já o teste qui-quadrado de homogeneidade (χ²_hom), que compara as 10 regiões entre si, detecta a assimetria em 100 % das repetições a partir de N = 10 000. Esse cenário de brinquedo foi motivado pela troca de sinal entre regiões do espaço de fase e pela compensação ππ ↔ KK entre canais discutidas pelo LHCb (2023).
 
-Resumo das 9 configurações salvo em `resultados/metricas.csv` (onde o desvio previsto é √((1 − A²)/T), a incerteza do viés na coluna `erro_vies` é σ_A/√M ≈ 0,0007, 0,0002 e 0,00007 para N = 10³, 10⁴ e 10⁵, e a rejeição a 5 % compara o teste binomial do total com o teste χ²_hom entre regiões):
+Resumo das 9 configurações salvo em `resultados/metricas.csv` (onde o desvio previsto é √((1 − A²)/T), a incerteza do viés na coluna `erro_vies` é σ_A/√M ≈ 0,0007, 0,0002 e 0,00007 para N = 10³, 10⁴ e 10⁵, e a rejeição a 5 % compara o teste binomial bilateral do total — com valor-p igual ao dobro da cauda acumulada de min(N⁻, N⁺), limitado a 1, e poder de referência avaliado em T fixo contra T sorteado por Poisson no Monte Carlo — com o teste χ²_hom entre regiões):
 
 | Cenário | N_exp | A verdadeiro | Viés médio | Desvio obs. | Desvio prev. | Rejeição total | Rejeição χ²_hom |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -53,7 +53,7 @@ Comparei os intervalos de Wald, Wilson e Clopper-Pearson (95 %) convertidos de p
 
 ![](figuras/F6_cobertura_curva_T100.png)
 
-Na curva de cobertura exata com T = 100 (`F6_cobertura_curva_T100.png`), o intervalo de Wald cai quando A chega perto de ±1, batendo 63,3 % no extremo plotado (|A| = 0,98). No teste de estresse com poucos eventos por região (N_exp = 100, T ≈ 10 e A = 0,8, salvo em `resultados/cobertura_estresse.csv`), a cobertura de Wald cai para 62,7 % na soma exata (62,8 % no Monte Carlo), enquanto Wilson fica em 95,9 % (96,0 % MC) e Clopper-Pearson em 99,0 %. Para manter a execução em cerca de 2 minutos, calculei a cobertura exata somando todos os inteiros até λ = 200 e usei uma cobertura média aproximada (amostrando uma malha de pontos de T) para λ > 200; dobrar a densidade dessa malha altera a cobertura em menos de 0,1 ponto percentual.
+Na curva de cobertura exata com T = 100 (`F6_cobertura_curva_T100.png`), o intervalo de Wald cai quando A chega perto de ±1, batendo 63,3 % no extremo plotado (|A| = 0,98). No teste de estresse com poucos eventos por região (N_exp = 100, T ≈ 10 e A = 0,8, salvo em `resultados/cobertura_estresse.csv`), a cobertura de Wald cai para 62,7 % na soma exata (62,8 % no Monte Carlo), enquanto Wilson fica em 95,9 % (96,0 % MC) e Clopper-Pearson em 99,0 %. Para manter a execução em cerca de 2 minutos, a soma binomial em k foi avaliada na janela de ±7σ em torno de np e a média sobre T de Poisson em ±5√λ, somando todos os inteiros até λ = 200 e usando uma aproximação numérica (amostrando uma malha espaçada de pontos de T) para λ > 200; dobrar a densidade dessa malha altera a cobertura em menos de 0,1 ponto percentual.
 
 ### 4. Eficiência diferente entre B⁻ e B⁺
 
