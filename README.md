@@ -1,29 +1,67 @@
 # Assimetrias entre B⁻ e B⁺ com dados simulados
 
+**Resumo.** O erro de A cai com 1/√N (inclinação −0,50 em escala log-log). Com ~10 eventos por região e A = 0,8, o intervalo de Wald cobre só 63 %, contra 96 % do Wilson. A janela ótima em m(p p̄) tem largura b*/s ≈ 2,8. No plano de Dalitz, dois blocos de sinais opostos que se cancelam na contagem total (p = 0,97) aparecem no mapa S_j (máximo +6,17) e no teste χ²_hom (p ≈ 1,3×10⁻²⁰). Tudo com dados simulados.
+
+![](figuras/F10_mapa_dois_blocos.png)
+
+*F10: mapa de S_j no plano de Dalitz (s12, s23) para o cenário `dois_blocos`. A cor é a significância local S_j (vermelho: excesso de B⁻; azul: excesso de B⁺). Os dois blocos se cancelam na contagem total, mas aparecem separados no mapa.*
+
 Na física de partículas, a violação de CP mede a diferença de comportamento entre partículas e antipartículas. Ela é uma das condições de Sakharov (1967) necessárias para explicar por que há mais matéria do que antimatéria no Universo, mas a violação de CP que vem da matriz CKM do Modelo Padrão (Thomson, 2013) é pequena demais (por várias ordens de grandeza) para explicar sozinha a assimetria cosmológica observada.
 
 Este repositório reúne um estudo com dados simulados (Monte Carlo) para testar estimadores, intervalos de confiança e testes de hipótese usados em medidas de assimetria, usando como motivação física a cinemática do decaimento de três corpos B± → p p̄ K± estudado pelo LHCb (LHCb Collaboration, 2014). Os artigos experimentais citados servem apenas para motivar o problema e as escalas cinemáticas (não há dados reais nem validação direta das medidas do detector): eu escolho os valores de assimetria no arquivo de configuração, sorteio as contagens de Poisson para B⁻ (N⁻) e B⁺ (N⁺) e verifico se as contas recuperam o que foi colocado a partir da definição
 
-A = (N⁻ − N⁺) / (N⁻ + N⁺).
+$$A = \frac{N^- - N^+}{N^- + N^+}.$$
 
-O projeto está dividido em três etapas: na **etapa 1**, testo os estimadores, intervalos de confiança (Wald, Wilson e Clopper-Pearson), testes de hipótese e o efeito de eficiências diferentes dividindo o espaço em 10 regiões de mesmo peso; na **etapa 2**, calculo os pesos cinemáticos do espaço de fase em m(p p̄) e a largura ótima da janela sobre um sinal gaussiano 1D; na **etapa 3**, sorteio eventos no plano de Dalitz 2D (s12, s23) para testar o mapa de significância local S_j quando dois blocos de sinais opostos se cancelam na contagem total.
+## Notação
 
-Na primeira etapa do estudo, o espaço é dividido em k = 10 regiões de mesmo peso (w_i = 0,1) e cada configuração é repetida M = 2000 vezes para N_exp = 10³, 10⁴ e 10⁵ eventos esperados, comparando três cenários:
+* $N^-$, $N^+$: contagens de B⁻ e B⁺, sorteadas de uma distribuição de Poisson.
+* $T = N^- + N^+$: total observado no conjunto analisado (o total, uma região ou um bin).
+* $N$ (ou $N_\mathrm{exp}$): número esperado de eventos no total (10³, 10⁴ e 10⁵ nas simulações).
+* $k$ e $M$: número de regiões (k = 10) e de repetições do Monte Carlo (M = 2000); $w_i$ é o peso da região $i$.
+* $a = \dfrac{\varepsilon^- - \varepsilon^+}{\varepsilon^- + \varepsilon^+}$: assimetria de eficiência entre B⁻ e B⁺.
+
+Desvio previsto de A (usado em toda a comparação entre simulação e teoria):
+
+$$\sigma_A = \sqrt{\frac{1 - A^2}{T}}.$$
+
+## Etapas e montagem
+
+### Etapa 1: estimadores, intervalos e testes
+
+O espaço é dividido em k = 10 regiões de mesmo peso (w_i = 0,1) e cada configuração é repetida M = 2000 vezes para N_exp = 10³, 10⁴ e 10⁵ eventos esperados, comparando três cenários:
 * `sem_efeito`: A_i = 0 em todas as 10 regiões (A_total = 0);
 * `global`: A_i = +0,05 em todas as regiões (A_total = +0,05);
 * `compensacao`: A_i = +0,10 nas regiões 1 a 5 e A_i = −0,10 nas regiões 6 a 10 (A_total = 0).
+
+Os intervalos comparados são Wald, Wilson e Clopper-Pearson (95 %), convertidos de p = N⁻/T para A = 2p − 1 (Brown, Cai e DasGupta, 2001). Os testes são o binomial bilateral do total e o χ² de homogeneidade entre regiões (χ²_hom).
+
+### Etapa 2: espaço de fase em m(p p̄) e largura da janela
+
+Os pesos cinemáticos w_i das 10 faixas deixam de ser iguais e passam a ser calculados integrando pela regra do trapézio (Landau, Páez e Bordeianu, 2024) a quantidade 2m [s23_max(m²) − s23_min(m²)] (usando ds12 = 2m dm) ao longo de m = m(p p̄) ∈ [2m_p, M_B − m_K] = [1,8765; 4,7856] GeV (com as massas do PDG; valores salvos em `resultados/etapa2_pesos.csv`). Para estudar um efeito localizado perto do limiar bariônico, apliquei um perfil gaussiano unidimensional A(m) = A0 exp(−(m − m0)² / (2s²)) centrado em m0 = 2,2 GeV (com A0 = 0,20 e largura s = 0,15 GeV).
+
+### Etapa 3: mapa de significância no plano de Dalitz
+
+Sorteei 20 000 eventos na região cinemática bidimensional (s12, s23) de B± → p p̄ K± e calculei em cada bin a significância descontando a razão total α = N⁻/N⁺,
+
+$$S_j = \frac{N^-_j - \alpha N^+_j}{\sqrt{\alpha\, T_j}},$$
+
+baseada no método de Bediaga et al. (2009). No cenário `dois_blocos` (parâmetros em `config.json`), coloquei dois blocos gaussianos bidimensionais no plano (s12, s23): um com A0 = +0,30 em (s12, s23) = (4,5; 12,0) GeV² e larguras (1,2; 4,0) GeV², e outro mais largo com A0 = −0,15 em (15,0; 6,0) GeV² e larguras (3,0; 2,5) GeV². Os dois blocos têm sinais opostos (+ e −) para que se anulem quase por completo na contagem total (a média esperada dos perfis sobre a região cinemática dá A_total esperado ≈ −0,003, com erro estatístico 1/√N ≈ 0,007 para N = 20 000).
 
 ## Principais resultados
 
 ### 1. Compensação local e resumo da etapa 1
 
+*Pergunta: um teste sobre o total enxerga duas metades do espaço com assimetrias opostas?*
+
 No cenário `compensacao`, as regiões 1 a 5 têm assimetria +0,10 e as regiões 6 a 10 têm −0,10. Como todas têm o mesmo peso, na soma total uma metade cancela a outra e A_total esperado dá zero.
 
 ![](figuras/F4_compensacao.png)
 
+*F4: histogramas da assimetria estimada em N = 10⁴ para as regiões 1 a 5 (A = +0,10), as regiões 6 a 10 (A = −0,10) e o total (verde). O total fica centrado em zero; as duas metades ficam separadas.*
+
 Com N = 10 000, o histograma do total (verde) fica centrado em zero e o teste binomial global rejeita H0 em 4,6 ± 0,5 % das vezes (compatível com o falso positivo nominal de 5 %). Já o teste qui-quadrado de homogeneidade (χ²_hom), que compara as 10 regiões entre si, detecta a assimetria em 100 % das repetições a partir de N = 10 000. Esse cenário de brinquedo foi motivado pela troca de sinal entre regiões do espaço de fase e pela compensação ππ ↔ KK entre canais discutidas pelo LHCb (2023).
 
-Resumo das 9 configurações salvo em `resultados/metricas.csv` (onde o desvio previsto é √((1 − A²)/T), a incerteza do viés na coluna `erro_vies` é σ_A/√M ≈ 0,0007, 0,0002 e 0,00007 para N = 10³, 10⁴ e 10⁵, e a rejeição a 5 % compara o teste binomial bilateral do total — com valor-p igual ao dobro da cauda acumulada de min(N⁻, N⁺), limitado a 1, e poder de referência avaliado em T fixo contra T sorteado por Poisson no Monte Carlo — com o teste χ²_hom entre regiões):
+Resumo das 9 configurações, salvo em `resultados/metricas.csv` (as definições das colunas estão em *Detalhes numéricos*):
 
 | Cenário | N_exp | A verdadeiro | Viés médio | Desvio obs. | Desvio prev. | Rejeição total | Rejeição χ²_hom |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -37,53 +75,83 @@ Resumo das 9 configurações salvo em `resultados/metricas.csv` (onde o desvio p
 | compensacao | 10000 | 0,00 | −0,0002 | 0,0099 | 0,0100 | 4,6 % | 100 % |
 | compensacao | 100000 | 0,00 | −0,0001 | 0,0032 | 0,0032 | 5,1 % | 100 % |
 
+Atenção ao que cada coluna de rejeição mede em cada cenário. "Rejeição total" é falso positivo (esperado ≈ 5 %) em `sem_efeito` e `compensacao` (A_total = 0) e poder em `global`. "Rejeição χ²_hom" é falso positivo em `sem_efeito` e `global` (assimetria igual em todas as regiões) e poder em `compensacao`.
+
 ### 2. Queda do erro com 1/√N e distribuição de pull
+
+*Pergunta: o erro estatístico de A cai como previsto e o estimador é bem calibrado?*
 
 Pela variância da soma das contagens independentes (Blitzstein e Hwang, 2019), o desvio-padrão de A estimado cai com 1/√N, enquanto o teorema do limite central garante que o formato do histograma fica gaussiano quando N cresce (Cowan, 1998; Wasserman, 2004).
 
 ![](figuras/F5_sigma_vs_N.png)
 
+*F5: desvio de A_total contra N_exp (escala log-log) para os três cenários; a linha tracejada é 1/√N.*
+
 Nos sorteios principais passei por duas ordens de grandeza (N = 10³, 10⁴ e 10⁵, um fator 100). A razão entre o desvio em 10³ e o desvio em 10⁵ deu 9,76 (`sem_efeito`), 10,17 (`global`) e 10,04 (`compensacao`), perto do 10 esperado.
 
-Como 3 pontos igualmente espaçados em log N (10³, 10⁴ e 10⁵) fazem a inclinação de mínimos quadrados depender só das pontas (repetindo a conta da razão), rodei também N = 3000 para a figura F5. Com os 4 pontos, as inclinações em escala log-log deram −0,494, −0,505 e −0,502 (esperado: −0,50 ± 0,02). O formato gaussiano (figuras F3) foi testado pelo pull, que deu média próxima de zero e desvio 0,982 no cenário `global` em N = 10⁴ (ficando entre 0,982 e 1,006 nas nove configurações).
+Como 3 pontos igualmente espaçados em log N (10³, 10⁴ e 10⁵) fazem a inclinação de mínimos quadrados depender só das pontas (repetindo a conta da razão), rodei também N = 3000 para a figura F5. Com os 4 pontos, as inclinações em escala log-log deram −0,494, −0,505 e −0,502 (esperado: −0,50 ± 0,02).
+
+O pull, (Â − A)/σ_Â, deu média próxima de zero e desvio 0,982 no cenário `global` em N = 10⁴ (ficando entre 0,982 e 1,006 nas nove configurações). Isso indica ausência de viés e erro bem calibrado; não prova, sozinho, que a distribuição é gaussiana. O formato foi conferido só visualmente, comparando o histograma do total com a normal prevista (F3), sem teste formal de normalidade.
+
+![](figuras/F3_hist_total_global.png)
+
+*F3: histograma de A_total (`global`, N = 10⁴) contra a normal prevista (curva vermelha).*
 
 ### 3. Intervalos de confiança e cobertura
 
-Comparei os intervalos de Wald, Wilson e Clopper-Pearson (95 %) convertidos de p = N⁻/T para A = 2p − 1 (Brown, Cai e DasGupta, 2001).
+*Pergunta: qual intervalo cobre o valor verdadeiro em 95 % dos casos, inclusive com poucos eventos?*
 
 ![](figuras/F6_cobertura_curva_T100.png)
 
-Na curva de cobertura exata com T = 100 (`F6_cobertura_curva_T100.png`), o intervalo de Wald cai quando A chega perto de ±1, batendo 63,3 % no extremo plotado (|A| = 0,98). No teste de estresse com poucos eventos por região (N_exp = 100, T ≈ 10 e A = 0,8, salvo em `resultados/cobertura_estresse.csv`), a cobertura de Wald cai para 62,7 % na soma exata (62,8 % no Monte Carlo), enquanto Wilson fica em 95,9 % (96,0 % MC) e Clopper-Pearson em 99,0 %. Para manter a execução em cerca de 2 minutos, a soma binomial em k foi avaliada na janela de ±7σ em torno de np e a média sobre T de Poisson em ±5√λ, somando todos os inteiros até λ = 200 e usando uma aproximação numérica (amostrando uma malha espaçada de pontos de T) para λ > 200; dobrar a densidade dessa malha (de 21 para 42 pontos) altera a cobertura em até 1,1 ponto percentual no pior caso testado (Wald, λ = 300, A = 0,98) e em menos de 0,35 ponto percentual nos demais (λ = 300, 1000 e 10000; A de −0,90 a 0,98).
+*F6: cobertura exata dos três intervalos contra A verdadeiro, com T = 100; a linha tracejada marca 95 %.*
+
+Na curva de cobertura exata com T = 100 (`F6_cobertura_curva_T100.png`), o intervalo de Wald cai quando A chega perto de ±1, batendo 63,3 % no extremo plotado (|A| = 0,98). No teste de estresse com poucos eventos por região (N_exp = 100, T ≈ 10 e A = 0,8, salvo em `resultados/cobertura_estresse.csv`), a cobertura de Wald cai para 62,7 % na soma exata (62,8 % no Monte Carlo), enquanto Wilson fica em 95,9 % (96,0 % MC) e Clopper-Pearson em 99,0 %.
 
 ### 4. Eficiência diferente entre B⁻ e B⁺
 
-Como o detector é feito de matéria, K⁻ e K⁺ interagem de forma diferente e o K⁻ sofre maior absorção nuclear (Thomson, 2013), de modo que fica ε⁻ < ε⁺ (a < 0); pela definição a = (ε⁻ − ε⁺)/(ε⁻ + ε⁺), usei a = −0,02 (−2 %) na simulação. Na figura abaixo (`F8_eficiencia.png`), as curvas teóricas desenham a positivo (em módulo) para ilustrar o comportamento do viés e da significância aparente.
+*Pergunta: uma diferença de eficiência de detecção cria uma assimetria falsa? Dá para corrigir?*
+
+Como o detector é feito de matéria, K⁻ e K⁺ interagem de forma diferente e o K⁻ sofre maior absorção nuclear (Thomson, 2013), de modo que fica ε⁻ < ε⁺ (a < 0); pela definição de a na seção Notação, usei a = −0,02 (−2 %) na simulação. Na figura abaixo (`F8_eficiencia.png`), as curvas teóricas desenham a positivo (em módulo) para ilustrar o comportamento do viés e da significância aparente.
 
 ![](figuras/F8_eficiencia.png)
+
+*F8: à esquerda, A observado contra A verdadeiro para a = 0; 0,02 e 0,05. À direita, significância aparente contra N_exp (com A = 0) para a = 0,005; 0,01 e 0,02; as linhas cinzas marcam 3σ e 5σ. Os painéis usam |a|; a simulação usa a = −0,02.*
 
 Os resultados dos sorteios com a = −0,02 estão em `resultados/eficiencia_resumo.csv`:
 
 * Sem corrigir: com A = 0 e a = −0,02, a média observada fica em ~ −0,02. Como o erro estatístico cai com 1/√N, a significância aparente em módulo sobe no Monte Carlo de 0,66σ (N = 10³) e 1,96σ (N = 10⁴) para 6,32σ em N = 10⁵ (contra |a|√N = 0,63σ, 2,00σ e 6,32σ esperados), dando 100 % de falsas descobertas em N = 10⁵.
-* Corrigindo com a exato: a inversão `corrigir(A_obs(A, a), a) = A` fecha em menos de 10⁻¹² quando testada direto na fórmula. Nos sorteios de Monte Carlo com a = −0,02 conhecido sem erro, o viés médio depois de corrigir zera até o ruído estatístico da amostra (~10⁻⁴ em N = 10⁵, onde a média ficou em 3e-5).
-* Caso com incerteza de calibração em a (σ_a = 0,005, ou 0,5 ponto percentual): quando a é sorteado com incerteza absoluta gaussiana σ_a = 0,005 em N = 10⁵ (quarta linha de `resultados/eficiencia_resumo.csv`), o desvio-padrão do A corrigido sobe de 0,31 % (0,00314 observado / 0,00316 só estatístico) para 0,60 % (0,00596 observado, contra √(σ_A² + σ_a²) = 0,00592 esperado). Com amostra grande, é a incerteza em a que limita a medida.
+* Corrigindo com a exato: a inversão `corrigir(A_obs(A, a), a) = A` fecha em menos de 10⁻¹² quando testada direto na fórmula. Nos sorteios de Monte Carlo com a = −0,02 conhecido sem erro, o viés médio depois de corrigir zera até o ruído estatístico da amostra (~10⁻⁴ em N = 10⁵, onde a média ficou em 3×10⁻⁵).
+* Caso com incerteza de calibração em a (σ_a = 0,005, ou 0,5 ponto percentual): quando a é sorteado com incerteza absoluta gaussiana σ_a = 0,005 em N = 10⁵ (última linha de `resultados/eficiencia_resumo.csv`, a de `sigma_a = 0.005`), o desvio-padrão do A corrigido sobe de 0,31 % (0,00314 observado / 0,00316 só estatístico) para 0,60 % (0,00596 observado, contra √(σ_A² + σ_a²) = 0,00592 esperado). Com amostra grande, é a incerteza em a que limita a medida.
 
 ### 5. Espaço de fase em m(p p̄) e largura da janela (etapa 2)
 
-Na etapa 2, os pesos cinemáticos w_i das 10 faixas deixam de ser iguais e passam a ser calculados integrando pela regra do trapézio (Landau, Páez e Bordeianu, 2024) a quantidade 2m [s23_max(m²) − s23_min(m²)] (usando ds12 = 2m dm) ao longo de m = m(p p̄) ∈ [2m_p, M_B − m_K] = [1,8765; 4,7856] GeV (com as massas do PDG; valores salvos em `resultados/etapa2_pesos.csv`). Para estudar um efeito localizado perto do limiar bariônico, apliquei um perfil gaussiano unidimensional A(m) = A0 exp(−(m − m0)² / (2s²)) centrado em m0 = 2,2 GeV (com A0 = 0,20 e largura s = 0,15 GeV).
+*Pergunta: que largura de janela em m(p p̄) maximiza a significância de um efeito localizado?*
 
 ![](figuras/F9_largura.png)
 
-Integrando os eventos numa janela [m0 − b/2, m0 + b/2], o sinal acumulado cresce proporcionalmente a erf(b / (2√2 s)) enquanto a incerteza estatística da contagem cresce com √b, de modo que a significância esperada Z(b) ∝ erf(b / (2√2 s)) / √b é máxima quando b*/s ≈ 2,80 (2,798 por bisseção, 2,79 na varredura analítica e 3 na malha discreta de Monte Carlo em `F9_largura.png`). Esse valor b*/s ≈ 2,8 vale para este modelo idealizado (sinal gaussiano 1D sobre densidade local uniforme, sem fundo e sem interferência entre amplitudes).
+*F9: significância média Z contra a largura da janela b/s. Pontos: Monte Carlo; linha: teoria (escalada); linha verde tracejada: b*.*
+
+Integrando os eventos numa janela [m0 − b/2, m0 + b/2], o sinal acumulado cresce proporcionalmente a erf(b / (2√2 s)) enquanto a incerteza estatística da contagem cresce com √b, de modo que a significância esperada
+
+$$Z(b) \propto \frac{\mathrm{erf}\!\left(b / (2\sqrt{2}\,s)\right)}{\sqrt{b}}$$
+
+é máxima quando b*/s ≈ 2,8. Esse valor vale para este modelo idealizado (sinal gaussiano 1D sobre densidade local uniforme, sem fundo e sem interferência entre amplitudes).
 
 ### 6. Plano de Dalitz de B± → p p̄ K± (etapa 3)
 
-Na etapa 3 sorteei 20 000 eventos na região cinemática bidimensional (s12, s23) de B± → p p̄ K± e calculei em cada bin a significância descontando a razão total α = N⁻/N⁺, S_j = (N⁻_j − α N⁺_j)/√(α T_j), baseada no método de Bediaga et al. (2009).
+*Pergunta: o mapa de S_j revela dois blocos que se cancelam na contagem total?*
 
 ![](figuras/F10_mapa_dois_blocos.png)
 
-No cenário `dois_blocos` (parâmetros em `config.json`), coloquei dois blocos gaussianos bidimensionais no plano (s12, s23): um com A0 = +0,30 em (s12, s23) = (4,5; 12,0) GeV² e larguras (1,2; 4,0) GeV², e outro mais largo com A0 = −0,15 em (15,0; 6,0) GeV² e larguras (3,0; 2,5) GeV². Os dois blocos têm sinais opostos (+ e −) para que se anulem quase por completo na contagem total (a média esperada dos perfis sobre a região cinemática dá A_total esperado ≈ −0,003, com erro estatístico 1/√N ≈ 0,007 para N = 20 000).
+*F10: mapa de S_j para `dois_blocos` (a mesma figura do início).*
 
-Pelos valores salvos em `resultados/etapa3_dalitz.csv`, o bin mais alto do bloco positivo chega a S = +6,17 e o bloco negativo chega a S = −3,95. O teste χ²_hom nos 48 bins com pelo menos 20 eventos dá p = 1,32e-20. Já na contagem total do plano, a soma entre os dois blocos no sorteio deu A_total = −0,0003 (dentro do esperado de −0,003 ± 0,007) e valor-p binomial `p_total` = 0,971797.
+Pelos valores salvos em `resultados/etapa3_dalitz.csv`, o bin mais alto do bloco positivo chega a S = +6,17 e o bloco negativo chega a S = −3,95. Esses valores são máximos entre vários bins, e não significâncias isoladas; o teste global é o χ²_hom nos 48 bins com pelo menos 20 eventos, que dá p = 1,3×10⁻²⁰. Já na contagem total do plano, a soma entre os dois blocos no sorteio deu A_total = −0,0003 (dentro do esperado de −0,003 ± 0,007) e valor-p binomial `p_total` ≈ 0,97 (valor completo em `resultados/etapa3_dalitz.csv`).
+
+## Detalhes numéricos
+
+* **Tabela da seção 1.** O desvio previsto é $\sqrt{(1 - A^2)/T}$. A incerteza do viés na coluna `erro_vies` é σ_A/√M ≈ 0,0007, 0,0002 e 0,00007 para N = 10³, 10⁴ e 10⁵. A rejeição a 5 % compara o teste binomial bilateral do total (valor-p igual ao dobro da cauda acumulada de min(N⁻, N⁺), limitado a 1, e poder de referência avaliado em T fixo contra T sorteado por Poisson no Monte Carlo) com o teste χ²_hom entre regiões.
+* **Cobertura exata (seção 3).** Para manter a execução em cerca de 2 minutos, a soma binomial em k foi avaliada na janela de ±7σ em torno de np e a média sobre T de Poisson em ±5√λ, somando todos os inteiros até λ = 200 e usando uma aproximação numérica (amostrando uma malha espaçada de pontos de T) para λ > 200. Dobrar a densidade dessa malha (de 21 para 42 pontos) altera a cobertura em até 1,1 ponto percentual no pior caso testado (Wald, λ = 300, A = 0,98) e em menos de 0,35 ponto percentual nos demais (λ = 300, 1000 e 10000; A de −0,90 a 0,98).
+* **Largura ótima (seção 5).** O valor b*/s ≈ 2,80 saiu de três cálculos: 2,798 por bisseção, 2,79 na varredura analítica e 3 na malha discreta de Monte Carlo (`F9_largura.png`).
 
 ## O que ficou de fora
 
@@ -93,7 +161,22 @@ Pelos valores salvos em `resultados/etapa3_dalitz.csv`, o bin mais alto do bloco
 
 ## Como reproduzir os resultados
 
-As funções utilizadas encontram-se na pasta `src/`. Para gerar novamente as tabelas na pasta `resultados/` e os gráficos em `figuras/` (testado em Python 3.12; leva ~2 min com a semente fixa configurada em `config.json`):
+Estrutura do repositório:
+
+```text
+projeto-assimetrias/
+├── src/              # funções: estimadores, intervalos, cobertura, testes, espaço de fase, Dalitz
+├── config.json       # semente fixa, cenários e parâmetros
+├── rodar_tudo.py     # gera resultados/ e figuras/ e roda a tabela de verificação
+├── resultados/       # tabelas em CSV (inclui verificacao.csv)
+├── figuras/          # gráficos F1 a F10
+├── notebook.ipynb    # roteiro curto que lê os arquivos salvos por rodar_tudo.py
+└── requirements.txt
+```
+
+O notebook percorre um experimento único, as 2000 repetições, a cobertura, a compensação local, a eficiência, as etapas 2 e 3 e a tabela de verificação (cada linha compara um método com uma referência independente: conta feita à mão, soma exata, scipy). Ele depende dos arquivos de `resultados/`, então `rodar_tudo.py` deve rodar antes.
+
+Para gerar novamente as tabelas na pasta `resultados/` e os gráficos em `figuras/` (testado em Python 3.12; leva ~2 min com a semente fixa configurada em `config.json`):
 
 ```bash
 pip install -r requirements.txt
