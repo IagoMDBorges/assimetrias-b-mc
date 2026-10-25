@@ -1,6 +1,6 @@
 # Assimetrias entre B⁻ e B⁺ com dados simulados
 
-**Resumo.** O erro de A cai com 1/√N (inclinação −0,50 em escala log-log). Com ~10 eventos por região e A = 0,8, o intervalo de Wald cobre só 63 %, contra 96 % do Wilson. A janela ótima em m(p p̄) tem largura b*/s ≈ 2,8. No plano de Dalitz, dois blocos de sinais opostos que se cancelam na contagem total (p = 0,97) aparecem no mapa S_j (máximo +6,17) e no teste χ²_hom (p ≈ 1,3×10⁻²⁰). Tudo com dados simulados.
+**Resumo.** O erro de A cai com 1/√N (inclinação −0,50 em escala log-log). Com ~10 eventos por região e A = 0,8, o intervalo de Wald cobre só 63 %, contra 96 % do Wilson. A janela ótima em m(p p̄) tem largura b*/s ≈ 2,8 (largura da janela em unidades da largura s do sinal). No plano de Dalitz, dois blocos de sinais opostos que se cancelam na contagem total (p = 0,97) aparecem no mapa S_j (máximo +6,17) e no teste χ²_hom (p ≈ 1,3×10⁻²⁰). Tudo com dados simulados. A tabela de verificação (`resultados/verificacao.csv`) compara cada método com uma referência independente (conta feita à mão, soma exata ou scipy).
 
 ![](figuras/F10_mapa_dois_blocos.png)
 
@@ -18,6 +18,7 @@ $$A = \frac{N^- - N^+}{N^- + N^+}.$$
 * $T = N^- + N^+$: total observado no conjunto analisado (o total, uma região ou um bin).
 * $N$ (ou $N_\mathrm{exp}$): número esperado de eventos no total (10³, 10⁴ e 10⁵ nas simulações).
 * $k$ e $M$: número de regiões (k = 10) e de repetições do Monte Carlo (M = 2000); $w_i$ é o peso da região $i$.
+* $\lambda$: média de Poisson de T (o número esperado de eventos no conjunto analisado, por exemplo λ = N w_i para uma região).
 * $a = \dfrac{\varepsilon^- - \varepsilon^+}{\varepsilon^- + \varepsilon^+}$: assimetria de eficiência entre B⁻ e B⁺.
 
 Desvio previsto de A (usado em toda a comparação entre simulação e teoria):
@@ -43,7 +44,7 @@ Os pesos cinemáticos w_i das 10 faixas deixam de ser iguais e passam a ser calc
 
 Sorteei 20 000 eventos na região cinemática bidimensional (s12, s23) de B± → p p̄ K± e calculei em cada bin a significância descontando a razão total α = N⁻/N⁺,
 
-$$S_j = \frac{N^-_j - \alpha N^+_j}{\sqrt{\alpha\, T_j}},$$
+$$S_j = \frac{N^-_j - \alpha N^+_j}{\sqrt{\alpha T_j}},$$
 
 baseada no método de Bediaga et al. (2009). No cenário `dois_blocos` (parâmetros em `config.json`), coloquei dois blocos gaussianos bidimensionais no plano (s12, s23): um com A0 = +0,30 em (s12, s23) = (4,5; 12,0) GeV² e larguras (1,2; 4,0) GeV², e outro mais largo com A0 = −0,15 em (15,0; 6,0) GeV² e larguras (3,0; 2,5) GeV². Os dois blocos têm sinais opostos (+ e −) para que se anulem quase por completo na contagem total (a média esperada dos perfis sobre a região cinemática dá A_total esperado ≈ −0,003, com erro estatístico 1/√N ≈ 0,007 para N = 20 000).
 
@@ -121,7 +122,7 @@ Os resultados dos sorteios com a = −0,02 estão em `resultados/eficiencia_resu
 
 * Sem corrigir: com A = 0 e a = −0,02, a média observada fica em ~ −0,02. Como o erro estatístico cai com 1/√N, a significância aparente em módulo sobe no Monte Carlo de 0,66σ (N = 10³) e 1,96σ (N = 10⁴) para 6,32σ em N = 10⁵ (contra |a|√N = 0,63σ, 2,00σ e 6,32σ esperados), dando 100 % de falsas descobertas em N = 10⁵.
 * Corrigindo com a exato: a inversão `corrigir(A_obs(A, a), a) = A` fecha em menos de 10⁻¹² quando testada direto na fórmula. Nos sorteios de Monte Carlo com a = −0,02 conhecido sem erro, o viés médio depois de corrigir zera até o ruído estatístico da amostra (~10⁻⁴ em N = 10⁵, onde a média ficou em 3×10⁻⁵).
-* Caso com incerteza de calibração em a (σ_a = 0,005, ou 0,5 ponto percentual): quando a é sorteado com incerteza absoluta gaussiana σ_a = 0,005 em N = 10⁵ (última linha de `resultados/eficiencia_resumo.csv`, a de `sigma_a = 0.005`), o desvio-padrão do A corrigido sobe de 0,31 % (0,00314 observado / 0,00316 só estatístico) para 0,60 % (0,00596 observado, contra √(σ_A² + σ_a²) = 0,00592 esperado). Com amostra grande, é a incerteza em a que limita a medida.
+* Caso com incerteza de calibração em a (σ_a = 0,005, ou 0,5 ponto percentual): quando a é sorteado com incerteza absoluta gaussiana σ_a = 0,005 em N = 10⁵ (linha `sigma_a = 0.005` de `resultados/eficiencia_resumo.csv`), o desvio-padrão do A corrigido sobe de 0,31 % (0,00314 observado / 0,00316 só estatístico) para 0,60 % (0,00596 observado, contra √(σ_A² + σ_a²) = 0,00592 esperado). Com amostra grande, é a incerteza em a que limita a medida.
 
 ### 5. Espaço de fase em m(p p̄) e largura da janela (etapa 2)
 
@@ -133,7 +134,7 @@ Os resultados dos sorteios com a = −0,02 estão em `resultados/eficiencia_resu
 
 Integrando os eventos numa janela [m0 − b/2, m0 + b/2], o sinal acumulado cresce proporcionalmente a erf(b / (2√2 s)) enquanto a incerteza estatística da contagem cresce com √b, de modo que a significância esperada
 
-$$Z(b) \propto \frac{\mathrm{erf}\!\left(b / (2\sqrt{2}\,s)\right)}{\sqrt{b}}$$
+$$Z(b) \propto \frac{\mathrm{erf}\left(\frac{b}{2\sqrt{2}s}\right)}{\sqrt{b}}$$
 
 é máxima quando b*/s ≈ 2,8. Esse valor vale para este modelo idealizado (sinal gaussiano 1D sobre densidade local uniforme, sem fundo e sem interferência entre amplitudes).
 
@@ -149,8 +150,8 @@ Pelos valores salvos em `resultados/etapa3_dalitz.csv`, o bin mais alto do bloco
 
 ## Detalhes numéricos
 
-* **Tabela da seção 1.** O desvio previsto é $\sqrt{(1 - A^2)/T}$. A incerteza do viés na coluna `erro_vies` é σ_A/√M ≈ 0,0007, 0,0002 e 0,00007 para N = 10³, 10⁴ e 10⁵. A rejeição a 5 % compara o teste binomial bilateral do total (valor-p igual ao dobro da cauda acumulada de min(N⁻, N⁺), limitado a 1, e poder de referência avaliado em T fixo contra T sorteado por Poisson no Monte Carlo) com o teste χ²_hom entre regiões.
-* **Cobertura exata (seção 3).** Para manter a execução em cerca de 2 minutos, a soma binomial em k foi avaliada na janela de ±7σ em torno de np e a média sobre T de Poisson em ±5√λ, somando todos os inteiros até λ = 200 e usando uma aproximação numérica (amostrando uma malha espaçada de pontos de T) para λ > 200. Dobrar a densidade dessa malha (de 21 para 42 pontos) altera a cobertura em até 1,1 ponto percentual no pior caso testado (Wald, λ = 300, A = 0,98) e em menos de 0,35 ponto percentual nos demais (λ = 300, 1000 e 10000; A de −0,90 a 0,98).
+* **Tabela da seção 1.** O desvio previsto é $\sqrt{(1 - A^2)/T}$. A incerteza do viés na coluna `erro_vies` é σ_A/√M ≈ 0,0007, 0,0002 e 0,00007 para N = 10³, 10⁴ e 10⁵. A rejeição a 5 % compara o teste binomial bilateral do total com o teste χ²_hom entre regiões. No teste binomial, o valor-p é o dobro da cauda acumulada de min(N⁻, N⁺), limitado a 1. O poder de referência é avaliado com T fixo, e o Monte Carlo sorteia T de uma Poisson.
+* **Cobertura exata (seção 3).** Para manter a execução em cerca de 2 minutos, a soma binomial em k foi avaliada na janela de ±7σ em torno de np e a média sobre T de Poisson em ±5√λ, somando todos os inteiros até λ = 200 e usando uma aproximação numérica (amostrando uma malha espaçada de pontos de T) para λ > 200. Os números das seções 1 a 6 não usam essa aproximação (T = 100 e T ≈ 10 usam a soma exata); ela só entra na comparação entre o Monte Carlo e a soma exata para N = 10⁴ e 10⁵ (`F6_cobertura_mc.png` e o item 11 da tabela de verificação, com 0 de 54 comparações fora de 3σ). Dobrar a densidade dessa malha (de 21 para 42 pontos) altera a cobertura em até 1,1 ponto percentual no pior caso testado (Wald, λ = 300, A = 0,98) e em menos de 0,35 ponto percentual nos demais (λ = 300, 1000 e 10000; A de −0,90 a 0,98).
 * **Largura ótima (seção 5).** O valor b*/s ≈ 2,80 saiu de três cálculos: 2,798 por bisseção, 2,79 na varredura analítica e 3 na malha discreta de Monte Carlo (`F9_largura.png`).
 
 ## O que ficou de fora
@@ -164,12 +165,12 @@ Pelos valores salvos em `resultados/etapa3_dalitz.csv`, o bin mais alto do bloco
 Estrutura do repositório:
 
 ```text
-projeto-assimetrias/
+assimetrias-b-mc/
 ├── src/              # funções: estimadores, intervalos, cobertura, testes, espaço de fase, Dalitz
 ├── config.json       # semente fixa, cenários e parâmetros
 ├── rodar_tudo.py     # gera resultados/ e figuras/ e roda a tabela de verificação
 ├── resultados/       # tabelas em CSV (inclui verificacao.csv)
-├── figuras/          # gráficos F1 a F10
+├── figuras/          # gráficos F1 a F10 (só parte deles aparece neste README)
 ├── notebook.ipynb    # roteiro curto que lê os arquivos salvos por rodar_tudo.py
 └── requirements.txt
 ```
