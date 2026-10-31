@@ -1,86 +1,102 @@
 # Assimetrias entre B⁻ e B⁺ com dados simulados
 
-**Resumo.** Este projeto investiga o comportamento estatístico e computacional de medidas de assimetria de carga em decaimentos de três corpos ($B^\pm \to p\bar{p} K^\pm$), combinando simulações de Monte Carlo, cinemática relativística e testes de hipóteses:
-* **Cobertura em baixa estatística:** O intervalo de Wald perde cobertura de forma severa com poucos eventos ou assimetria elevada (cobre apenas 63 % para $\bar T \approx 10$ e $A = 0{,}8$), enquanto o método de Wilson preserva cobertura estável em 96 %. O erro do estimador $\hat A$ escala com $1/\sqrt{N}$ (inclinação $-0{,}50$ em escala log-log).
-* **Janela ótima de sinal:** Para um sinal localizado em $m(p\bar{p})$, a largura de integração que maximiza a significância estatística sobre densidade uniforme é $b^\ast/s \approx 2{,}80$ (em unidades da dispersão $s$).
-* **Cancelamento local no plano de Dalitz:** Assimetrias regionais opostas podem se compensar na contagem agregada ($A_\mathrm{total} \approx 0$, valor-*p* global $0{,}97$), mas são reveladas localmente pelo mapa de significâncias $S_j$ (pico de $+6{,}17$) e pelo teste de homogeneidade ($\chi^2_\mathrm{hom}$, $p \approx 1{,}3 \times 10^{-20}$).
+## Resumo
 
-Todo o estudo emprega dados simulados e é acompanhado por uma suíte de verificação numérica independente contra soluções exatas (`resultados/verificacao.csv`).
+Em decaimentos de três corpos de mésons $B^\pm$ (como $B^\pm \to p\bar{p} K^\pm$), a assimetria de carga entre estados finais de $B^-$ e $B^+$ pode variar em magnitude e trocar de sinal ao longo do espaço de fase. Esse comportamento cria um problema prático de análise estatística: quando existem sub-regiões cinemáticas com assimetrias opostas, a soma integrada sobre todo o espaço de fase promove o cancelamento mútuo entre excessos positivos e negativos, resultando em uma assimetria global próxima de zero que oculta as diferenças locais. Ao mesmo tempo, subdividir a amostra em regiões menores reduz a contagem de eventos por bin — exigindo intervalos de confiança robustos em baixa estatística — e torna a análise sensível à largura da janela de seleção e a assimetrias instrumentais de detecção.
 
-![](figuras/F10_mapa_dois_blocos.png)
+Para investigar esse problema de forma controlada, desenvolvi simulações de Monte Carlo em Python que sorteiam contagens de Poisson para $B^-$ e $B^+$ sob perfis conhecidos de assimetria (nulo, uniforme e com inversão de sinal), avaliando o desempenho de estimadores pontuais, intervalos de confiança, cortes cinemáticos em $m(p\bar{p})$ e testes de hipóteses locais e globais no plano de Dalitz $(s_{12}, s_{23})$.
 
-**F10:** Mapa de significância local $S_j$ no plano de Dalitz $(s_{12}, s_{23})$ para o cenário `dois_blocos`. Em vermelho: excesso de $B^-$; em azul: excesso de $B^+$. Os dois blocos se cancelam na contagem integrada do plano, mas aparecem claramente separados no mapa local.
+**Principais conclusões e resultados quantitativos:**
+* **Detecção de diferenças locais sob cancelamento global:** Quando regiões opostas do espaço de fase possuem assimetrias que se compensam, o teste binomial aplicado à contagem total não distingue o sinal da hipótese nula, enquanto o teste qui-quadrado de homogeneidade ($\chi^2_\mathrm{hom}$) e o mapa de significâncias locais ($S_j$) recuperam a estrutura injetada no modelo. No plano de Dalitz simulado com dois blocos de sinais opostos ($N = 20\,000$), a assimetria global resulta compatível com zero ($A_\mathrm{total} = -0{,}0003$, valor-*p* binomial $0{,}97$), mas a análise particionada identifica os desvios locais (extremos de $S_j = +6{,}17$ e $-3{,}95$) e rejeita a homogeneidade espacial com $p \approx 1{,}3 \times 10^{-20}$.
+* **Desempenho de intervalos de confiança em baixa estatística:** A subdivisão do espaço de fase reduz a contagem por bin ($T$), regime no qual a aproximação normal de Wald falha severamente perto das bordas físicas $\pm 1$, enquanto o intervalo de Wilson preserva cobertura adequada. Em testes de estresse com média de $\bar T \approx 10$ eventos por região e $A = 0{,}8$, a cobertura empírica de Wald cai para 63 %, contra 96 % do método de Wilson e 99 % de Clopper-Pearson. Para amostras crescentes, o erro padrão do estimador $\hat A$ confirma a escala teórica $1/\sqrt{N}$ (inclinação de $-0{,}50$ em escala log-log).
+* **Otimização da janela cinemática e efeitos instrumentais:** Para um sinal localizado na massa invariante $m(p\bar{p})$, a razão sinal-ruído é maximizada por uma janela de integração de largura $b^\ast/s \approx 2{,}80$ (em unidades da dispersão $s$ do sinal), evitando tanto a perda de eventos úteis em janelas estreitas quanto a diluição estatística em janelas largas. Adicionalmente, uma assimetria instrumental de detecção não corrigida de $a = -0{,}02$ ($-2\%$) induz desvios espúrios que crescem com $\sqrt{N}$ (atingindo $6{,}32\sigma$ e 100 % de falsas rejeições em $N = 10^5$); a inversão analítica elimina esse viés, mas a precisão final em amostras grandes passa a ser limitada pela incerteza sistemática de calibração $\sigma_a$.
 
-Na física de partículas, a violação de CP mede a diferença de comportamento entre matéria e antimatéria. Ela é uma das condições necessárias formuladas por Sakharov (1967) para explicar por que há mais matéria do que antimatéria no Universo. No Modelo Padrão, a fase da matriz CKM gera violação de CP (Thomson, 2013), mas essa quantidade é pequena demais (por muitas ordens de grandeza) para explicar sozinha a assimetria observada na cosmologia.
+Todo o estudo utiliza dados simulados e conta com uma suíte automatizada de verificação numérica independente contra soluções analíticas e referências da biblioteca SciPy (`resultados/verificacao.csv`).
 
-Este repositório reúne um estudo computacional em Python para testar estimadores, intervalos de confiança e testes de hipóteses aplicados a medidas de assimetria. Usei como motivação física a cinemática do decaimento de três corpos $B^\pm \to p\bar{p} K^\pm$, estudado pela colaboração LHCb (LHCb Collaboration, 2014). Os artigos experimentais citados servem apenas para definir as escalas cinemáticas e a física do processo (não utilizo dados reais de detectores): eu escolho os valores de assimetria no arquivo de configuração, sorteio as contagens de Poisson para $B^-$ ($N^-$) e $B^+$ ($N^+$) e verifico se os métodos numéricos recuperam corretamente os valores colocados, a partir da definição básica
+---
+
+## Introdução e definição do problema
+
+Na física de partículas, a violação da simetria de CP mede a diferença de comportamento entre processos de matéria e de antimatéria, constituindo uma das condições formuladas por Sakharov (1967) para explicar a assimetria bariônica do Universo. Embora a fase complexa da matriz CKM gere violação de CP no Modelo Padrão (Thomson, 2013), sua magnitude é insuficiente por muitas ordens de grandeza para responder pela prevalência cosmológica da matéria, motivando estudos detalhados em decaimentos de hádrons pesados.
+
+Em decaimentos hadrônicos de três corpos sem charme, como $B^\pm \to p\bar{p} K^\pm$ (LHCb Collaboration, 2014, 2023), a dinâmica ocorre através de diferentes estados intermediários e ressonâncias que interferem no espaço de fase bidimensional (plano de Dalitz). Como as fases fortes e fracas dependem das variáveis cinemáticas, a assimetria de carga entre $B^-$ e $B^+$ não é necessariamente constante: ela pode apresentar excesso de $B^-$ em uma faixa de massa invariante e excesso de $B^+$ em outra.
+
+A assimetria de contagens em qualquer região ou amostra é definida a partir do número de eventos observados de $B^-$ ($N^-$) e de $B^+$ ($N^+$):
 
 $$A = \frac{N^- - N^+}{N^- + N^+}.$$
+
+Se o espaço de fase for composto por sub-regiões $i$ com frações de eventos $w_i$ ($\sum w_i = 1$) e assimetrias locais $A_i$, a assimetria global integrada será a média ponderada $A_\mathrm{total} = \sum w_i A_i$. Consequentemente, quando regiões distintas possuem assimetrias de sinais opostos ($A_i > 0$ e $A_j < 0$), seus efeitos se subtraem na soma global, podendo resultar em $A_\mathrm{total} \approx 0$ mesmo na presença de fortes assimetrias locais.
+
+Este repositório investiga computacionalmente esse problema metodológico. As publicações experimentais citadas servem para definir as massas, os limites cinemáticos e a motivação fenomenológica, mas **não são utilizados dados reais de detectores**: defino os parâmetros verdadeiros no arquivo `config.json`, gero contagens pseudoaleatórias de Poisson e avalio sob quais condições os métodos estatísticos recuperam as estruturas programadas no modelo.
 
 ## Notação
 
 | Símbolo | Significado |
 |---|---|
-| $N^-$, $N^+$ | Contagens de eventos observados de $B^-$ e $B^+$, sorteadas de distribuições de Poisson |
-| $T = N^- + N^+$ | Contagem total observada no subespaço sob análise (total, região ou bin); $T_j$ denota o bin $j$ |
+| $N^-$, $N^+$ | Contagens de eventos de $B^-$ e $B^+$, sorteadas de distribuições de Poisson |
+| $T = N^- + N^+$ | Contagem total observada no subespaço analisado (amostra total, região $i$ ou bin $j$) |
 | $N$, $N_\mathrm{exp}$ | Número esperado de eventos na amostra total ($10^3, 10^4$ e $10^5$ na etapa 1; $20\,000$ na etapa 3) |
-| $\lambda$ | Média do sorteio de Poisson para a variável $T$ (por exemplo, $\lambda = N w_i$ na região $i$) |
-| $k$, $M$ | Número de regiões cinemáticas ($k = 10$) e repetições de Monte Carlo ($M = 2000$) |
-| $w_i$ | Fração do espaço de fase correspondente à região $i$ ($w_i = 0{,}1$ na etapa 1; calculada via cinemática na etapa 2) |
-| $A$, $A_i$, $A_\mathrm{total}$ | Assimetria física verdadeira (em geral, na região $i$ e agregada sobre todo o espaço) |
-| $\hat A$, $\sigma_A$ | Estimador pontual da assimetria e seu respectivo desvio-padrão esperado |
-| $\alpha = N^-/N^+$ | Razão empírica entre as contagens totais observadas de $B^-$ e $B^+$ |
-| $S_j$ | Significância estatística local calculada no bin cinemático $j$ (etapa 3) |
-| $a$, $\sigma_a$ | Assimetria instrumental de detecção, $a = (\varepsilon^- - \varepsilon^+)/(\varepsilon^- + \varepsilon^+)$, e sua incerteza |
-| $A_\mathrm{obs}$ | Assimetria observada na presença de eficiências instrumentais desiguais |
-| $m_0$, $s$, $b$ | Posição central e largura do sinal em $m(p\bar{p})$, e extensão da janela de integração cinemática |
+| $\lambda$ | Média da distribuição de Poisson para a contagem $T$ ($\lambda = N w_i$ na região $i$) |
+| $k$, $M$ | Número de regiões cinemáticas ($k = 10$) e número de repetições de Monte Carlo ($M = 2000$) |
+| $w_i$ | Fração do espaço de fase correspondente à região $i$ ($w_i = 0{,}1$ na etapa 1; integrada via cinemática na etapa 2) |
+| $A$, $A_i$, $A_\mathrm{total}$ | Assimetria verdadeira no modelo (geral, na região $i$ e integrada sobre todo o espaço) |
+| $\hat A$, $\sigma_A$ | Estimador pontual da assimetria e seu desvio-padrão esperado |
+| $\alpha = N^-/N^+$ | Razão entre as contagens totais integradas de $B^-$ e $B^+$ na amostra |
+| $S_j$ | Significância estatística local no bin cinemático $j$ do plano de Dalitz (etapa 3) |
+| $a$, $\sigma_a$ | Assimetria instrumental de detecção, $a = (\varepsilon^- - \varepsilon^+)/(\varepsilon^- + \varepsilon^+)$, e sua incerteza de calibração |
+| $A_\mathrm{obs}$ | Assimetria bruta observada na presença de eficiências de detecção desiguais |
+| $m_0$, $s$, $b$ | Centro e largura do perfil gaussiano em $m(p\bar{p})$, e largura da janela de integração |
 
-O desvio-padrão esperado para o estimador $\hat A$ é expresso por
+O desvio-padrão esperado para o estimador $\hat A$ em um subespaço com contagem total $T$ é dado por
 
 $$\sigma_A = \sqrt{\frac{1 - A^2}{T}}.$$
 
-Nas comparações teóricas contra as médias das simulações, troco $T$ pela média esperada $\bar T \approx N_\mathrm{exp}$. Deste modo, para uma amostra com $N_\mathrm{exp} = 1000$ eventos e assimetria nula, o desvio previsto é $\sigma_A = 1/\sqrt{1000} \approx 0{,}0316$.
+Nas comparações teóricas com as médias de Monte Carlo, substitui-se $T$ pela contagem média esperada $\bar T \approx N_\mathrm{exp}$ (por exemplo, para $N_\mathrm{exp} = 1000$ e $A = 0$, obtém-se $\sigma_A = 1/\sqrt{1000} \approx 0{,}0316$).
 
-## Etapas e montagem do estudo
+---
 
-### Etapa 1: estimadores, intervalos e testes de hipóteses
+## Metodologia e etapas da simulação
 
-Dividi o espaço em $k = 10$ regiões de probabilidades idênticas ($w_i = 0{,}1$) e repeti cada configuração $M = 2000$ vezes para três tamanhos amostrais ($N_\mathrm{exp} = 10^3, 10^4$ e $10^5$), sob três cenários:
-* `sem_efeito`: $A_i = 0$ em todas as 10 regiões ($A_\mathrm{total} = 0$);
-* `global`: $A_i = +0{,}05$ uniformemente em todo o espaço ($A_\mathrm{total} = +0{,}05$);
+### Etapa 1: estimadores, intervalos de confiança e testes em regiões discretas
+
+Dividi o espaço em $k = 10$ regiões de pesos idênticos ($w_i = 0{,}1$) e repeti o sorteio de Poisson $M = 2000$ vezes para três tamanhos amostrais ($N_\mathrm{exp} = 10^3, 10^4$ e $10^5$), sob três cenários parametrizados:
+* `sem_efeito`: $A_i = 0$ nas 10 regiões ($A_\mathrm{total} = 0$), usado para calibrar a taxa de falsos positivos;
+* `global`: $A_i = +0{,}05$ uniformemente em todas as regiões ($A_\mathrm{total} = +0{,}05$);
 * `compensacao`: $A_i = +0{,}10$ nas regiões 1 a 5 e $A_i = -0{,}10$ nas regiões 6 a 10 ($A_\mathrm{total} = 0$).
 
-Para os intervalos de confiança (Wald, Wilson e Clopper-Pearson a 95 % de confiança), converti a proporção binomial $p = N^-/T$ para a assimetria $A = 2p - 1$ (Brown, Cai e DasGupta, 2001). Para testes de hipóteses, comparei o teste binomial exato bilateral na contagem global com o teste qui-quadrado de homogeneidade entre regiões cinemáticas ($\chi^2_\mathrm{hom}$).
+Para a construção dos intervalos de confiança a 95 % (métodos de Wald, Wilson e Clopper-Pearson), converti os limites da proporção binomial $p = N^-/T$ para a escala de assimetria via $A = 2p - 1$ (Brown, Cai e DasGupta, 2001). Para os testes de hipóteses, comparei o poder de detecção do teste binomial exato bilateral sobre a soma total contra o teste qui-quadrado de homogeneidade entre as regiões ($\chi^2_\mathrm{hom}$).
 
-### Etapa 2: espaço de fase em $m(p\bar{p})$ e largura ótima da janela
+### Etapa 2: cinemática em $m(p\bar{p})$ e janela ótima de seleção
 
-Nesta etapa, os pesos $w_i$ deixam de ser iguais e passam a ser calculados pela cinemática relativística de três corpos. Integrei numericamente pela regra dos trapézios (Landau, Páez e Bordeianu, 2024) a quantidade $2m\,[s_{23}^{\max}(m^2) - s_{23}^{\min}(m^2)]$ (a partir de $ds_{12} = 2m\,dm$) sobre faixas contíguas em $m = m(p\bar{p}) \in [2m_p, M_B - m_K] = [1{,}8765; 4{,}7856]\text{ GeV}$, utilizando as massas nominais do Particle Data Group, normalizando para $\sum w_i = 1$ (valores salvos em `resultados/etapa2_pesos.csv`). Para estudar um efeito localizado perto do limiar de produção do par próton-antipróton, apliquei um perfil gaussiano
+Nesta etapa, os pesos $w_i$ das faixas de massa invariante $m = m(p\bar{p}) \in [2m_p, M_B - m_K] = [1{,}8765; 4{,}7856]\text{ GeV}$ são determinados pela cinemática relativística de três corpos, integrando numericamente pela regra dos trapézios (Landau, Páez e Bordeianu, 2024) o elemento de espaço de fase proporcional a $2m\,[s_{23}^{\max}(m^2) - s_{23}^{\min}(m^2)]$ (a partir de $ds_{12} = 2m\,dm$) com as massas nominais do Particle Data Group e normalização $\sum w_i = 1$ (`resultados/etapa2_pesos.csv`). Para investigar a seleção ótima de um efeito concentrado perto do limiar bariônico (motivado pelo aumento de seção de choque próximo ao limiar $p\bar{p}$ observado experimentalmente; LHCb Collaboration, 2014), injetei um perfil gaussiano
 
 $$A(m) = A_0 \exp\left[-\frac{(m - m_0)^2}{2 s^2}\right],$$
 
-centrado em $m_0 = 2{,}2\text{ GeV}$, com amplitude $A_0 = 0{,}20$ e largura $s = 0{,}15\text{ GeV}$.
+centrado em $m_0 = 2{,}2\text{ GeV}$, com amplitude $A_0 = 0{,}20$ e largura $s = 0{,}15\text{ GeV}$, variando a largura $b$ da janela de integração $[m_0 - b/2, m_0 + b/2]$.
 
-### Etapa 3: mapa de significância local no plano de Dalitz
+### Etapa 3: mapeamento local no plano de Dalitz
 
-Gerei $20\,000$ eventos na região cinemática permitida do plano de Dalitz bidimensional $(s_{12}, s_{23})$ de $B^\pm \to p\bar{p} K^\pm$. Em cada bin bidimensional, calculei a significância local descontando a razão de contagens totais $\alpha = N^-/N^+$, seguindo o método de Bediaga et al. (2009):
+Gerei amostras de $N_\mathrm{exp} = 20\,000$ eventos distribuídos uniformemente na região cinemática permitida do plano de Dalitz $(s_{12}, s_{23}) = (m^2_{p\bar{p}}, m^2_{\bar{p}K})$ do decaimento $B^\pm \to p\bar{p} K^\pm$. Dividindo o plano em uma grade bidimensional, calculei em cada bin $j$ (com ocupação mínima $T_j \ge 20$) a significância local descontada da razão global de contagens $\alpha = N^-/N^+$, seguindo o método de Miranda (Bediaga et al., 2009):
 
 $$S_j = \frac{N^-_j - \alpha N^+_j}{\sqrt{\alpha T_j}}.$$
 
-No cenário `dois_blocos` (parametrizado em `config.json`), coloquei dois blocos gaussianos bidimensionais com sinais opostos no plano $(s_{12}, s_{23})$: um com $A_0 = +0{,}30$ centrado em $(4{,}5; 12{,}0)\text{ GeV}^2$ com dispersões $(1{,}2; 4{,}0)\text{ GeV}^2$, e outro mais largo com $A_0 = -0{,}15$ em $(15{,}0; 6{,}0)\text{ GeV}^2$ com dispersões $(3{,}0; 2{,}5)\text{ GeV}^2$. Eles foram calibrados para se cancelarem quase por completo na contagem total, de modo que a assimetria global simulada resulta compatível com zero ($A_\mathrm{total} = -0{,}0003$, com incerteza amostral $1/\sqrt{N} \approx 0{,}007$ para $N = 20\,000$).
+No cenário `dois_blocos`, inseri artificialmente duas estruturas gaussianas bidimensionais de sinais opostos no plano $(s_{12}, s_{23})$: uma positiva com $A_0 = +0{,}30$ centrada em $(4{,}5; 12{,}0)\text{ GeV}^2$ e larguras $(1{,}2; 4{,}0)\text{ GeV}^2$, e outra negativa mais extensa com $A_0 = -0{,}15$ centrada em $(15{,}0; 6{,}0)\text{ GeV}^2$ e larguras $(3{,}0; 2{,}5)\text{ GeV}^2$. Os parâmetros foram escolhidos para produzir cancelamento quase exato na contagem integrada sobre o plano, permitindo testar a recuperação da estrutura espacial via $S_j$ e $\chi^2_\mathrm{hom}$.
 
-## Principais resultados
+---
 
-### 1. Compensação local e resumo da etapa 1
+## Principais resultados e discussão
 
-No cenário `compensacao`, as regiões 1 a 5 possuem $A_i = +0{,}10$ e as regiões 6 a 10 possuem $A_i = -0{,}10$. Como todas as regiões têm o mesmo peso, no somatório total uma metade cancela a outra e a assimetria total esperada dá zero ($A_\mathrm{total} = 0$).
+### 1. Cancelamento na contagem global vs. detecção por homogeneidade
+
+No cenário `compensacao`, as metades opostas do espaço de fase possuem $A_i = +0{,}10$ (regiões 1 a 5) e $A_i = -0{,}10$ (regiões 6 a 10). A figura **F4** ilustra o efeito dessa configuração sobre as estimativas de assimetria em $N = 10\,000$:
 
 ![](figuras/F4_compensacao.png)
 
-**F4:** Histogramas da assimetria estimada $\hat A$ em $N = 10^4$ para as regiões 1 a 5 ($A = +0{,}10$), regiões 6 a 10 ($A = -0{,}10$) e contagem total (verde, centrada em zero).
+**F4:** Distribuições de $\hat A$ em $M = 2000$ simulações ($N = 10^4$) para o cenário `compensacao`, separando as regiões 1 a 5 ($A = +0{,}10$, azul), as regiões 6 a 10 ($A = -0{,}10$, laranja) e a contagem total agregada (verde).
 
-Com $N = 10\,000$, a distribuição amostral de $\hat A_\mathrm{total}$ permanece centrada na origem e o teste binomial bilateral global rejeita a hipótese nula em apenas $(4{,}6 \pm 0{,}5)\%$ das repetições — ou seja, comporta-se exatamente como o falso positivo nominal de 5 %. Em contrapartida, o teste qui-quadrado de homogeneidade ($\chi^2_\mathrm{hom}$), que compara as 10 regiões entre si, detecta a assimetria em 100 % das vezes a partir de $N = 10\,000$. Esse modelo de brinquedo foi motivado pela inversão de sinal da assimetria entre regiões do espaço de fase e pelo mecanismo de compensação $\pi\pi \leftrightarrow KK$ reportado pelo LHCb (2023).
+Como mostra a figura **F4**, os histogramas dos dois subgrupos de regiões formam picos bem separados em torno de $+0{,}10$ e $-0{,}10$, enquanto o histograma da contagem combinada (em verde) permanece estreito e centrado exatamente em zero. Na prática, isso significa que a integração global apaga a informação direcional das sub-regiões: o teste binomial bilateral aplicado à soma total rejeita a hipótese nula em apenas $(4{,}6 \pm 0{,}5)\%$ dos pseudoexperimentos, valor indistinguível da taxa nominal de falsos positivos de 5 %. Em contrapartida, o teste qui-quadrado de homogeneidade ($\chi^2_\mathrm{hom}$), que avalia a consistência entre as 10 regiões individualmente, detecta a anisotropia em 100 % das repetições a partir de $N = 10\,000$. Esse cenário simplificado ilustra o mecanismo de cancelamento integrado análogo à compensação entre canais ressonantes discutida pelo LHCb (2023).
 
-A tabela abaixo resume as 9 configurações simuladas (dados salvos em `resultados/metricas.csv`):
+A tabela a seguir resume as métricas obtidas nas nove configurações da Etapa 1 (dados completos em `resultados/metricas.csv`):
 
 | Cenário | $N_\mathrm{exp}$ | $A$ verdadeiro | Viés médio | Desvio obs. | Desvio prev. | Rejeição total | Rejeição $\chi^2_\mathrm{hom}$ |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -94,103 +110,125 @@ A tabela abaixo resume as 9 configurações simuladas (dados salvos em `resultad
 | compensacao | 10000 | 0,00 | −0,0002 | 0,0099 | 0,0100 | 4,6 % | 100 % |
 | compensacao | 100000 | 0,00 | −0,0001 | 0,0032 | 0,0032 | 5,1 % | 100 % |
 
-Nota metodológica: a coluna "Rejeição total" mede a taxa de falsos positivos (nominal de $\approx 5\%$) nos cenários `sem_efeito` e `compensacao` (onde $A_\mathrm{total} = 0$), e o poder de detecção no cenário `global`. A coluna "Rejeição $\chi^2_\mathrm{hom}$" quantifica falsos positivos em `sem_efeito` e `global` (assimetria homogênea entre bins), e poder estatístico em `compensacao`.
+*Nota de leitura da tabela:* a coluna "Rejeição total" representa a taxa de falsos positivos (nominal de 5 %) nos cenários `sem_efeito` e `compensacao` ($A_\mathrm{total} = 0$), e o poder de detecção no cenário `global` ($A_\mathrm{total} = +0{,}05$). Inversamente, a coluna "Rejeição $\chi^2_\mathrm{hom}$" mede falsos positivos em `sem_efeito` e `global` (onde a assimetria é uniforme entre as regiões), e poder estatístico em `compensacao`.
 
-### 2. Comportamento do erro com $1/\sqrt{N}$ e calibração via pull
+### 2. Escala do erro com $1/\sqrt{N}$ e calibração gaussiana
 
-Pela propagação de incertezas para somas de variáveis de Poisson (Blitzstein e Hwang, 2019), o desvio-padrão amostral de $\hat A$ cai com $1/\sqrt{N}$, e o Teorema Central do Limite assegura a convergência para a distribuição normal conforme $N$ cresce (Cowan, 1998; Wasserman, 2004).
+Pela propagação de incertezas em variáveis de Poisson (Blitzstein e Hwang, 2019), o erro padrão do estimador deve cair com $1/\sqrt{N}$, enquanto o Teorema Central do Limite garante que a distribuição amostral de $\hat A$ converge para uma gaussiana à medida que $N$ cresce (Cowan, 1998; Wasserman, 2004). Esse comportamento é examinado nas figuras **F5** e **F3**:
 
 ![](figuras/F5_sigma_vs_N.png)
 
-**F5:** Desvio-padrão amostral de $\hat A_\mathrm{total}$ em função de $N_\mathrm{exp}$ em escala log-log para os três cenários; a linha tracejada representa a escala teórica $1/\sqrt{N}$.
+**F5:** Desvio-padrão amostral de $\hat A_\mathrm{total}$ em função do tamanho esperado da amostra $N_\mathrm{exp}$ em escala log-log para os três cenários, comparado à reta teórica proporcional a $1/\sqrt{N}$ (linha tracejada).
 
-Nas simulações cobrindo duas ordens de grandeza ($N = 10^3, 10^4$ e $10^5$, fator 100), a razão entre os desvios obtidos em $10^3$ e $10^5$ resultou em $9{,}76$ (`sem_efeito`), $10{,}17$ (`global`) e $10{,}04$ (`compensacao`), muito perto do fator 10 esperado. Incluindo a amostra com $N = 3000$, os coeficientes angulares das retas de regressão em escala log-log ficaram em $-0{,}494$, $-0{,}505$ e $-0{,}502$, consistentes com o valor esperado $-0{,}50 \pm 0{,}02$.
-
-A variável de *pull*, definida por $(\hat A - A)/\hat\sigma_A$, teve média compatível com zero e desvio-padrão de $0{,}98$ no cenário `global` com $N = 10^4$ (ficando entre $0{,}98$ e $1{,}01$ nas nove configurações), o que confirma que o estimador não tem viés e que a incerteza está bem calibrada. A forma gaussiana foi avaliada visualmente pelo histograma empírico sobreposto à função densidade de probabilidade normal prevista (F3), sem aplicação de teste formal de hipótese de normalidade.
+Na figura **F5**, os desvios-padrão empíricos dos três cenários alinham-se diretamente sobre a reta tracejada teórica ao longo de duas ordens de grandeza ($N = 10^3$ a $10^5$). Quando a amostra aumenta por um fator 100, a razão entre os desvios observados em $10^3$ e $10^5$ resulta em $9{,}76$ (`sem_efeito`), $10{,}17$ (`global`) e $10{,}04$ (`compensacao`), confirmando a redução esperada de um fator 10 na incerteza estatística. Incluindo o ponto intermediário $N = 3000$, os ajustes lineares em escala log-log fornecem inclinações de $-0{,}494$, $-0{,}505$ e $-0{,}502$, plenamente compatíveis com o expoente teórico $-0{,}50 \pm 0{,}02$.
 
 ![](figuras/F3_hist_total_global.png)
 
-**F3:** Histograma empírico de $\hat A_\mathrm{total}$ no cenário `global` ($N = 10^4$) comparado à curva normal teórica prevista (linha vermelha).
+**F3:** Histograma normalizado das estimativas de $\hat A_\mathrm{total}$ no cenário `global` ($N = 10^4$, $A = +0{,}05$) superposto à densidade normal teórica prevista $\mathcal{N}(A, \sigma_A^2)$ (curva vermelha).
 
-### 3. Cobertura empírica dos intervalos de confiança
+A figura **F3** mostra que o histograma empírico das 2000 repetições acompanha sem assimetrias ou desvios sistemáticos a curva normal teórica centrada em $+0{,}05$ com largura $\sigma_A = 0{,}010$. De forma complementar, a distribuição da variável de *pull*, $(\hat A - A)/\hat\sigma_A$, apresentou média compatível com zero e desvio-padrão entre $0{,}98$ e $1{,}01$ em todas as nove configurações, demonstrando que o estimador pontual não possui viés mensurável e que a incerteza analítica está corretamente calibrada.
+
+### 3. Cobertura dos intervalos de confiança em regime de baixa contagem
+
+Quando o espaço de fase é subdividido em muitas regiões ou bins, a contagem individual $T$ em cada sub-região pode tornar-se pequena. A figura **F6** avalia o impacto desse regime sobre a cobertura real dos intervalos de confiança para $T = 100$:
 
 ![](figuras/F6_cobertura_curva_T100.png)
 
-**F6:** Cobertura exata dos intervalos de confiança de Wald, Wilson e Clopper-Pearson em função de $A$ verdadeiro para $T = 100$; a linha tracejada horizontal assinala a cobertura nominal de 95 %.
+**F6:** Cobertura analítica exata dos intervalos de confiança de Wald, Wilson e Clopper-Pearson em função da assimetria verdadeira $A$ para $T = 100$; a linha horizontal tracejada indica o nível de confiança nominal de 95 %.
 
-Na curva de cobertura exata com $T = 100$, o intervalo de Wald perde cobertura de forma severa quando a assimetria se aproxima dos extremos físicos $\pm 1$, caindo para $63{,}3\%$ em $\lvert A\rvert = 0{,}98$. No teste de estresse em regime de poucos eventos por região ($N_\mathrm{exp} = 100$, com média $\bar T \approx 10$ e $A = 0{,}8$; salvo em `resultados/cobertura_estresse.csv`), a cobertura de Wald atinge apenas cerca de 63 % (com plena concordância entre a integração analítica e a simulação de Monte Carlo), enquanto o intervalo de Wilson preserva cobertura em torno de 96 % e o método exato de Clopper-Pearson alcança 99 %.
+Observa-se visualmente na figura **F6** que, enquanto o intervalo de Wilson oscila próximo à linha tracejada de 95 % em todo o domínio e o método de Clopper-Pearson mantém cobertura conservadora sempre acima do nominal, a curva do intervalo de Wald sofre queda acentuada conforme $\lvert A\rvert$ se aproxima das bordas $\pm 1$, chegando a cobrir apenas 63,3 % do valor verdadeiro em $\lvert A\rvert = 0{,}98$. Essa patologia ocorre porque o método de Wald estima a variância binomial usando a própria proporção observada na amostra, que colapsa quando $N^-$ ou $N^+$ é muito pequeno. No teste de estresse com baixa estatística por região ($N_\mathrm{exp} = 100$, média $\bar T \approx 10$ eventos por bin e $A = 0{,}8$; `resultados/cobertura_estresse.csv`), a cobertura de Wald cai para cerca de 63 % tanto no cálculo exato quanto no Monte Carlo, ao passo que o método de escore de Wilson preserva cobertura de 96 % (e Clopper-Pearson atinge 99 %), justificando a adoção de Wilson em análises particionadas.
 
-### 4. Eficiência instrumental diferente entre $B^-$ e $B^+$
+### 4. Assimetria instrumental de detecção e propagação de incerteza sistemática
 
-Detectores físicos são feitos de matéria comum (prótons, nêutrons e elétrons). Por isso, antipartículas sofrem maior taxa de absorção nuclear inelástica que suas parceiras de matéria: no caso dos mésons carregados, o $K^-$ ($s\bar{u}$) é mais absorvido que o $K^+$ ($u\bar{s}$) porque o antiquark $\bar{u}$ se aniquila com quarks de valência $u$ dos núcleons formando híperons ($\Lambda, \Sigma$); analogamente, no par bariônico $p\bar{p}$ do decaimento, a seção de choque de aniquilação inelástica do antipróton $\sigma(\bar{p}N)$ é notavelmente superior à do próton $\sigma(pN)$ em baixas e médias energias (LHCb Collaboration, 2014; Thomson, 2013). Essa assimetria material induz eficiências de detecção intrinsecamente desiguais $\varepsilon^- < \varepsilon^+$, que simulei usando parâmetro instrumental $a = (\varepsilon^- - \varepsilon^+)/(\varepsilon^- + \varepsilon^+) = -0{,}02$ ($-2\%$). Como $N^\pm \propto \varepsilon^\pm (1 \pm A)$, a assimetria observada bruta $A_\mathrm{obs}$ e a sua respectiva transformação analítica de correção são:
+Detectores de partículas são construídos de matéria comum (prótons, nêutrons e elétrons), o que faz com que partículas e antipartículas sofram diferentes taxas de absorção nuclear ao atravessar o material ativo: mésons $K^-$ ($s\bar{u}$) têm maior seção de choque inelástica que $K^+$ ($u\bar{s}$) devido à aniquilação do antiquark $\bar{u}$ com quarks de valência $u$ nucleares formando híperons ($\Lambda, \Sigma$), e antiprótons ($\bar{p}$) sofrem seção de choque de aniquilação $\sigma(\bar{p}N)$ substancialmente maior que a de prótons $\sigma(pN)$ em baixas e médias energias (LHCb Collaboration, 2014; Thomson, 2013). Essa diferença gera eficiências de detecção desiguais ($\varepsilon^- \neq \varepsilon^+$), parametrizadas pela assimetria instrumental $a = (\varepsilon^- - \varepsilon^+)/(\varepsilon^- + \varepsilon^+)$. Como as contagens observadas escalam com $N^\pm \propto \varepsilon^\pm (1 \pm A)$, a assimetria bruta medida $A_\mathrm{obs}$ e sua inversão analítica de correção relacionam-se por:
 
 $$A_\mathrm{obs} = \frac{A + a}{1 + a A}, \qquad A = \frac{A_\mathrm{obs} - a}{1 - a A_\mathrm{obs}}.$$
 
-No caso em que não há assimetria física real ($A = 0$), a assimetria observada é puramente instrumental: $A_\mathrm{obs} = a$.
+A figura **F8** ilustra o viés introduzido por $a \neq 0$ e o crescimento da significância espúria quando nenhuma correção é aplicada:
 
 ![](figuras/F8_eficiencia.png)
 
-**F8:** À esquerda: assimetria observada $A_\mathrm{obs}$ em função de $A$ para magnitudes ilustrativas $a = 0$, $0{,}02$ e $0{,}05$. À direita: significância espúria aparente em função de $N_\mathrm{exp}$ para amostras com $A = 0$, com $a = 0{,}005$, $0{,}01$ e $0{,}02$; as linhas pontilhada e tracejada assinalam os limiares de evidência ($3\sigma$) e descoberta ($5\sigma$). *(Nota sobre convenção de sinal: a figura ilustra o comportamento geral em magnitude positiva $a > 0$; na simulação e no decaimento físico adota-se $a = -0{,}02$, sendo o efeito simétrico sob inversão de sinal).*
+**F8:** À esquerda: assimetria bruta observada $A_\mathrm{obs}$ em função da assimetria verdadeira $A$ para magnitudes ilustrativas $a = 0$, $0{,}02$ e $0{,}05$. À direita: evolução da significância aparente ($\lvert A_\mathrm{obs}\rvert/\sigma_A$) em função de $N_\mathrm{exp}$ para amostras sem efeito físico ($A = 0$), cruzando os limiares horizontais de $3\sigma$ (pontilhado) e $5\sigma$ (tracejado). *(Nota sobre convenção de sinal: os gráficos utilizam valores positivos $a > 0$ para visualização do deslocamento acima da diagonal; na simulação numérica adota-se $a = -0{,}02$, sendo o comportamento algébrico simétrico sob inversão de sinal).*
 
-Os resultados numéricos das simulações constam em `resultados/eficiencia_resumo.csv`:
-* **Sem correção:** mantendo $A = 0$ e $a = -0{,}02$, a assimetria aparente medida converge para $\approx -0{,}02$. Como o erro estatístico encolhe com $1/\sqrt{N}$, a significância estatística do falso sinal salta de $0{,}66\sigma$ ($N = 10^3$) para $6{,}32\sigma$ em $N = 10^5$ (compatível com os valores previstos $\lvert a\rvert\sqrt{N} = 0{,}63\sigma, 2{,}00\sigma$ e $6{,}32\sigma$), induzindo a 100 % de falsas rejeições da hipótese nula (falso sinal a $>5\sigma$) quando a amostra é grande.
-* **Correção com calibração exata de** $a$: a inversão analítica aplicada a $A_\mathrm{obs}$ recupera o valor verdadeiro com precisão numérica ($< 10^{-12}$). Nos sorteios de Monte Carlo com $a = -0{,}02$ conhecido, o viés médio após a correção zera até o nível do ruído estatístico da amostra (média observada de $3 \times 10^{-5}$ em $N = 10^5$).
-* **Calibração com incerteza experimental em** $a$: quando o próprio parâmetro $a$ é medido com incerteza gaussiana $\sigma_a = 0{,}005$ ($0{,}5$ ponto percentual) em $N = 10^5$ (linha `sigma_a = 0.005` em `resultados/eficiencia_resumo.csv`), o desvio-padrão do estimador corrigido sobe de $0{,}00314$ ($0{,}31\%$, só estatístico) para $0{,}00596$ ($0{,}60\%$, incluindo incerteza sistemática), em excelente acordo com a combinação quadrática esperada $\sqrt{\sigma_A^2 + \sigma_a^2} = 0{,}00592$. Em amostras grandes, é a incerteza de calibração que domina o erro final da medida.
+No painel esquerdo da figura **F8**, nota-se que eficiências desiguais deslocam sistematicamente a curva medida em relação à reta ideal $A_\mathrm{obs} = A$ (para $A = 0$, mede-se diretamente $A_\mathrm{obs} = a$). No painel direito, as curvas em escala log-log mostram que, como a incerteza estatística diminui com $1/\sqrt{N}$ enquanto o viés sistemático $a$ permanece constante, a significância aparente do falso sinal cresce proporcionalmente a $\lvert a\rvert\sqrt{N}$ e inevitavelmente ultrapassa a barreira de $5\sigma$ em amostras grandes.
 
-### 5. Espaço de fase em $m(p\bar{p})$ e largura ótima da janela
+Os testes de Monte Carlo com $A = 0$ e $a = -0{,}02$ (`resultados/eficiencia_resumo.csv`) confirmam três regimes distintos para a análise experimental:
+* **Ausência de correção:** A assimetria bruta converge para $-0{,}02$, elevando a significância espúria média de $0{,}66\sigma$ ($N = 10^3$) e $1{,}96\sigma$ ($N = 10^4$) para $6{,}32\sigma$ em $N = 10^5$, o que provoca 100 % de falsas rejeições da hipótese nula em alta estatística.
+* **Correção com calibração exata de $a$:** Aplicando a transformação inversa com o valor exato de $a$, o estimador corrigido recupera $A = 0$ com precisão de máquina ($< 10^{-12}$) e elimina o viés médio nas simulações (média residual de $3 \times 10^{-5}$ em $N = 10^5$).
+* **Correção com incerteza de calibração $\sigma_a$:** Quando o parâmetro instrumental é conhecido apenas dentro de uma incerteza gaussiana $\sigma_a = 0{,}005$ (0,5 ponto percentual) em $N = 10^5$, o desvio-padrão total da medida corrigida sobe de $0{,}00314$ (puramente estatístico) para $0{,}00596$, reproduzindo a soma em quadratura $\sqrt{\sigma_A^2 + \sigma_a^2} = 0{,}00592$ e mostrando que a precisão de calibração passa a dominar o erro total em amostras grandes.
 
-Integrando eventos em uma janela simétrica $[m_0 - b/2, m_0 + b/2]$, o número de eventos de sinal acumula-se proporcionalmente à função erro $\mathrm{erf}\left(b / (2\sqrt{2} s)\right)$, enquanto as flutuações estatísticas do total crescem com $\sqrt{b}$. A significância esperada comporta-se como:
+### 5. Otimização da largura de janela cinemática em $m(p\bar{p})$
 
-$$Z(b) \propto \frac{\mathrm{erf}\left(\frac{b}{2\sqrt{2} s}\right)}{\sqrt{b}},$$
+Quando um sinal de assimetria está concentrado em torno de uma massa invariante $m_0$ com dispersão $s$, integrar eventos dentro de uma janela simétrica $[m_0 - b/2, m_0 + b/2]$ acumula o sinal proporcionalmente à função erro $\mathrm{erf}\left(b / (2\sqrt{2} s)\right)$, enquanto o ruído estatístico de contagem sob densidade aproximadamente constante cresce com $\sqrt{b}$. Dessa forma, a significância esperada da medida dentro da janela segue a relação:
 
-apresentando um ponto máximo em $b^\ast/s \approx 2{,}80$. Essa relação analítica é válida para um perfil gaussiano unidimensional sobre densidade cinemática aproximadamente uniforme, sem fundo e sem interferência entre amplitudes.
+$$Z(b) \propto \frac{\mathrm{erf}\left(\frac{b}{2\sqrt{2} s}\right)}{\sqrt{b}}.$$
+
+A figura **F9** confronta essa curva teórica com a significância média obtida nas simulações de Monte Carlo da Etapa 2 em função da razão $b/s$:
 
 ![](figuras/F9_largura.png)
 
-**F9:** Significância estatística média $Z$ em função da largura relativa da janela de integração $b/s$. Círculos: Monte Carlo; linha contínua: modelo teórico analítico escalado; linha tracejada verde: ponto ótimo $b^\ast/s$.
+**F9:** Significância estatística média $Z$ em função da largura relativa da janela de corte $b/s$ em torno de $m_0 = 2{,}2\text{ GeV}$. Círculos azuis: médias das simulações de Monte Carlo; curva contínua laranja: previsão analítica escalada; linha vertical tracejada verde: largura ótima teórica $b^\ast/s \approx 2{,}80$.
 
-### 6. Mapeamento cinemático no plano de Dalitz ($B^\pm \to p\bar{p} K^\pm$)
+O resultado visual da figura **F9** exibe a formação de um máximo bem pronunciado: para janelas muito estreitas ($b/s < 1{,}5$), a significância é baixa porque grande parte dos eventos do pico gaussiano é descartada pelo corte; após atingir o ponto ótimo em $b^\ast/s \approx 2{,}80$ (e $b/s = 3{,}0$ na grade discreta simulada), o alargamento adicional da janela faz a curva cair progressivamente, pois as caudas externas quase não adicionam sinal ($A(m) \approx 0$) mas continuam inflando o denominador estatístico com $\sqrt{b}$. Isso demonstra quantitativamente como cortes cinemáticos mal dimensionados podem diluir a sensibilidade a efeitos localizados em análises de três corpos.
 
-O mapa de significância bidimensional está exibido na figura F10, no início deste documento. Conforme registrado em `resultados/etapa3_dalitz.csv`, o bin cinemático mais expressivo do bloco positivo alcança significância local $S_j = +6{,}17$, enquanto o bin do bloco negativo atinge $S_j = -3{,}95$. 
+### 6. Mapeamento local no plano de Dalitz e recuperação de estruturas simuladas
 
-Para estabelecer a referência sob a hipótese nula e calibrar o efeito de múltiplas comparações (*look-elsewhere effect* em 48 bins), simulei o plano de Dalitz no cenário sem assimetria física (`sem_efeito`), no qual as significâncias locais $S_j$ devem flutuar como ruído puramente estatístico:
+Na Etapa 3, avaliamos como o cálculo de significâncias locais $S_j$ e o teste de homogeneidade se comportam no plano de Dalitz $(s_{12}, s_{23})$ de $B^\pm \to p\bar{p} K^\pm$. Como uma grade com dezenas de bins está sujeita a flutuações estatísticas individuais (efeito de múltiplas comparações ou *look-elsewhere*), o primeiro passo consiste em verificar a distribuição de $S_j$ sob a hipótese nula (`sem_efeito`), apresentada na figura **F10 (nulo)**:
 
 ![](figuras/F10_hist_S_nulo.png)
 
-**F10 (nulo):** Distribuição empírica das significâncias locais $S_j$ nos bins cinemáticos para o cenário nulo (sem violação de CP), superposta à densidade normal padrão $\mathcal{N}(0,1)$. A aderência à curva confirma que, na ausência de sinal, as flutuações locais além de $\pm 3\sigma$ são raras e flutuações da ordem de $+6\sigma$ são virtualmente impossíveis por puro acaso estocástico.
+**F10 (nulo):** Histograma normalizado das significâncias locais $S_j$ calculadas nos bins cinemáticos para o cenário sem assimetria injetada (`sem_efeito`), comparado à curva da distribuição normal padrão $\mathcal{N}(0,1)$ (linha vermelha).
 
-Trata-se de uma confirmação direta de que os picos locais de $+6{,}17$ e $-3{,}95$ observados no cenário `dois_blocos` representam um sinal físico inequívoco. A significância global agregada do decaimento é fornecida pelo teste qui-quadrado de homogeneidade ($\chi^2_\mathrm{hom}$) sobre os 48 bins com ocupação $\ge 20$ eventos, atingindo valor-*p* nominal de $p \approx 1{,}3 \times 10^{-20}$ a partir da cauda assintótica contínua de $\chi^2$ com 47 graus de liberdade (confirmando com clareza que a assimetria local é real). Em contrapartida, na soma integrada sobre todo o plano de Dalitz, o cancelamento mútuo entre os dois blocos resulta em assimetria global nula ($A_\mathrm{total} = -0{,}0003$, estatisticamente indistinguível de zero frente a $1/\sqrt{N} \approx 0{,}007$) e valor-*p* binomial $p_\mathrm{total} \approx 0{,}97$ (registro completo em `resultados/etapa3_dalitz.csv`).
+Observa-se na figura **F10 (nulo)** que, na ausência de assimetria programada no modelo, os valores de $S_j$ distribuem-se simetricamente em torno de zero e seguem de perto a curva gaussiana unitária $\mathcal{N}(0,1)$, permanecendo contidos dentro do intervalo esperado de flutuações aleatórias ($\lvert S_j\rvert \lesssim 3$). Isso estabelece a referência de calibração para distinguir ruído estocástico de variações introduzidas no espaço de fase.
 
-## Detalhes numéricos
+Em seguida, a figura **F10** apresenta o mapa espacial de $S_j$ obtido quando simulamos o cenário `dois_blocos`, no qual duas regiões gaussianas com assimetrias de sinais opostos ($+0{,}30$ e $-0{,}15$) foram inseridas artificialmente no modelo:
 
-* **Tabela de métricas e validação de poder (seção 1):** o desvio previsto analítico corresponde a $\sqrt{(1 - A^2)/\bar T}$, onde $\bar T \approx N_\mathrm{exp}$ denota o valor esperado total. A incerteza amostral da estimativa de viés (`erro_vies`) equivale a $\sigma_A/\sqrt{M} \approx 0{,}0007$, $0{,}0002$ e $0{,}00007$ para $N = 10^3, 10^4$ e $10^5$. A taxa de rejeição a 5 % de significância confronta o teste binomial bilateral sobre a soma total e o teste de homogeneidade $\chi^2_\mathrm{hom}$ entre regiões. Na validação de poder do item 12 da tabela de verificação (`verificacao.csv`), o poder analítico exato de referência é calculado admitindo contagem total $T$ estritamente fixa ($T = N w_i$), enquanto no experimento de Monte Carlo o valor de $T$ flutua de acordo com uma distribuição de Poisson. Para acomodar o efeito dessa flutuação de Poisson em regimes amostrais finitos, inclui-se uma margem de tolerância empírica de $+0{,}005$ (+0,5 ponto percentual) além da banda estatística de $3\sigma$; sem essa margem adicional, 3 das 18 configurações (especificamente em $N = 1000$, onde as flutuações relativas de Poisson são mais expressivas) ultrapassam a banda estrita de $3\sigma$ calculada para $T$ fixo.
-* **Avaliação de cobertura em malha de Poisson (seção 3):** para manter a execução em cerca de 2 minutos, a soma binomial sobre $k$ foi restrita à janela de corte $\pm 7\sigma$ em torno da média $np$, e a média de Poisson sobre $T$ foi avaliada no intervalo $\pm 5\sqrt{\lambda}$. Para médias esperadas $\lambda \le 200$ (como na curva exata com $T = 100$ e nas regiões individuais com $N = 10^3$), somam-se todos os inteiros consecutivos; para $\lambda > 200$ (como no somatório total de $N = 10^3, 10^4$ e $10^5$, e nas regiões com $N \ge 10^4$), emprega-se uma malha discretizada representativa de $T$. A estabilidade numérica dessa amostragem foi verificada duplicando a malha de 21 para 42 nós: a variação observada na cobertura atinge no máximo $\approx 1{,}1$ ponto percentual no extremo assintótico mais desfavorável ($A = 0{,}98$ com Wald em $\lambda = 300$) e permanece tipicamente abaixo de $\approx 0{,}5$ ponto percentual na maior parte do espaço de parâmetros.
-* **Extensão ótima da janela (seção 5):** o parâmetro ótimo analítico $b^\ast/s \approx 2{,}80$ é obtido resolvendo $4u e^{-u^2}/\sqrt{\pi} - \mathrm{erf}(u) = 0$, cuja raiz por bisseção fornece $u \approx 0{,}98994$ e $b^\ast/s = 2\sqrt{2}u \approx 2{,}79997$ (arredondado para $2{,}80$). O valor concorda perfeitamente com a varredura contínua de alta resolução ($2{,}79$) e com a amostragem discreta da simulação de Monte Carlo ($3{,}0$ em `F9_largura.png`).
+![](figuras/F10_mapa_dois_blocos.png)
 
-## Limitações do modelo
+**F10:** Mapa bidimensional de significância local $S_j$ no plano de Dalitz $(s_{12}, s_{23})$ para o cenário simulado `dois_blocos`. A escala de cores indica excesso local de $B^-$ em vermelho ($S_j > 0$) e excesso de $B^+$ em azul ($S_j < 0$) dentro do contorno cinemático permitido.
 
-* **Eventos de fundo:** a simulação não incorpora componentes de fundo combinatório ou de reflexão física. Para um fundo estatisticamente simétrico ($B$ eventos de fundo e $S$ de sinal), a incerteza estatística sobre a assimetria do sinal sofre uma amplificação pelo fator multiplicativo $\sqrt{1 + B/S}$ (Thomson, 2013).
-* **Eficiência homogênea e assimetria de produção:** em colisões próton-próton ($pp$) em detectores reais, a assimetria bruta detectada combina violação direta de CP com assimetrias intrínsecas de detecção e de produção entre hádrons $B^-$ e $B^+$ (experimentalmente controladas por canais de calibração livres de assimetria de CP, tais como $B^\pm \to J/\psi K^\pm$; LHCb Collaboration, 2023). No modelo idealizado, assume-se eficiência uniforme no espaço de fase; na etapa 3, a normalização global $\alpha = N^-/N^+$ na definição de $S_j$ desconta assimetrias globais homogêneas antes de avaliar variações locais.
-* **Ausência de amplitudes coerentes de interferência:** a variação espacial de assimetria foi parametrizada por perfis gaussianos fenomenológicos (unidimensionais em $m(p\bar{p})$ na etapa 2 e bidimensionais em $(s_{12}, s_{23})$ na etapa 3), sem a montagem formal de matrizes de transição com interferência entre ondas ressonantes parciais e fases fortes/fracas dependentes de momento.
+Visualmente, o mapa da figura **F10** resolve de forma nítida as duas estruturas de sinais opostos: destaca-se uma concentração vermelha intensa na região de baixo $s_{12}$ (onde o bin mais expressivo atinge $S_j = +6{,}17$) e uma mancha azul mais extensa na região de alto $s_{12}$ e baixo $s_{23}$ (atingindo $S_j = -3{,}95$), ambas muito além do ruído gaussiano observado no teste nulo. 
+
+Quando todos os $20\,000$ eventos do plano são somados sem subdivisão cinemática (`resultados/etapa3_dalitz.csv`), o excesso positivo de um bloco anula o excesso negativo do outro, fornecendo uma assimetria integrada $A_\mathrm{total} = -0{,}0003$ (compatível com zero dentro da incerteza amostral $1/\sqrt{N} \approx 0{,}007$) e um valor-*p* binomial global de $p_\mathrm{total} \approx 0{,}97$. Em contrapartida, a avaliação conjunta dos 48 bins ativos (com $T_j \ge 20$) através do teste qui-quadrado de homogeneidade resulta em $\chi^2_\mathrm{hom}$ com valor-*p* nominal de $p \approx 1{,}3 \times 10^{-20}$ (cauda contínua de $\chi^2$ com 47 graus de liberdade).
+
+Dessa forma, o teste de homogeneidade identifica diferenças entre as regiões do plano de Dalitz, embora a assimetria global permaneça compatível com zero. O resultado demonstra a capacidade do método de detectar estruturas locais que podem ser ocultadas pela integração global, sem constituir evidência física de violação de CP no processo estudado.
+
+---
+
+## Especificações técnicas e limitações do modelo
+
+### Detalhes de implementação numérica e validação
+
+* **Cálculo de cobertura em malha de Poisson (Seção 3):** Para manter o tempo total de execução do pipeline em cerca de 2 minutos, a soma binomial exata sobre $k$ foi truncada na janela de $\pm 7\sigma$ em torno da média $np$, e a média de Poisson sobre a contagem total $T$ foi avaliada no intervalo $\pm 5\sqrt{\lambda}$. Para médias esperadas $\lambda \le 200$ (como na curva exata de $T = 100$ e nas regiões individuais com $N = 10^3$), somam-se todos os inteiros consecutivos; para $\lambda > 200$ (somas totais e regiões com $N \ge 10^4$), utiliza-se uma malha discretizada de 21 nós em $T$. A estabilidade numérica dessa aproximação foi verificada dobrando a malha para 42 nós: a variação na cobertura é de no máximo $1{,}1$ ponto percentual no caso extremo ($A = 0{,}98$ com Wald em $\lambda = 300$) e permanece tipicamente abaixo de $0{,}5$ ponto percentual nas demais configurações.
+* **Tolerância de flutuação de Poisson no poder do teste binomial (Seção 1):** Na suíte de verificação (`resultados/verificacao.csv`, item 12), o poder analítico de referência do teste binomial é calculado assumindo contagem total $T$ fixa ($T = N w_i$), enquanto nas simulações de Monte Carlo $T$ flutua segundo uma distribuição de Poisson. Para acomodar a variância adicional introduzida por essa flutuação de $T$ em amostras finitas, adota-se uma margem de tolerância de $+0{,}005$ (+0,5 ponto percentual) além da banda de $3\sigma$; sem esse termo, 3 das 18 configurações (todas em $N = 1000$, onde a flutuação relativa de Poisson é maior) excedem ligeiramente o limite calculado com $T$ fixo.
+* **Determinação da largura ótima $b^\ast/s$ (Seção 5):** O valor analítico $b^\ast/s \approx 2{,}80$ é obtido igualando a zero a derivada de $\mathrm{erf}(u)/\sqrt{u}$ com $u = b/(2\sqrt{2}s)$, o que leva à equação transcendental $4u e^{-u^2}/\sqrt{\pi} - \mathrm{erf}(u) = 0$. A solução numérica por bisseção fornece a raiz $u \approx 0{,}98994$, resultando em $b^\ast/s = 2\sqrt{2}u \approx 2{,}79997$ (arredondado para $2{,}80$), em concordância com a varredura em grade fina ($2{,}79$) e com a grade discreta do Monte Carlo ($3{,}0$).
+
+### Limitações físicas e escopo das aproximações
+
+* **Ausência de eventos de fundo (*background*):** O estudo não inclui componentes de fundo combinatório ou de outros decaimentos parcialmente reconstruídos. Na presença de um fundo simétrico com $B$ eventos sob $S$ eventos de sinal, a sensibilidade estatística à assimetria do sinal é reduzida pela diluição da incerteza por um fator $\sqrt{1 + B/S}$ (Thomson, 2013).
+* **Assimetria de produção e dependência cinemática da eficiência:** Em experimentos reais em colisões próton-próton ($pp$), a assimetria bruta medida combina a assimetria do decaimento com a assimetria de produção entre $B^-$ e $B^+$ e com variações da eficiência instrumental em função do momento das partículas (controladas experimentalmente via canais de calibração como $B^\pm \to J/\psi K^\pm$; LHCb Collaboration, 2023). Nas simulações da Etapa 3, assume-se eficiência uniforme ao longo do plano de Dalitz, de modo que o fator global $\alpha = N^-/N^+$ na definição de $S_j$ corrige desvios integrados homogêneos antes de testar variações locais.
+* **Parametrização fenomenológica sem interferência de amplitudes:** As variações espaciais de assimetria foram modeladas por perfis gaussianos pré-definidos em $m(p\bar{p})$ e em $(s_{12}, s_{23})$ com densidade de eventos constante no espaço de fase, sem implementar um modelo de amplitudes coerentes com somas de ressonâncias (Breit-Wigner), fatores de forma e fases fortes/fracas dependentes dos ângulos de helicidade.
+
+---
 
 ## Como reproduzir os resultados
 
-Estrutura do repositório:
+Estrutura de arquivos do repositório:
 
 ```text
 assimetrias-b-mc/
 ├── src/              # Módulos com rotinas numéricas, estimadores, testes e cinemática
-├── config.json       # Sementes estocásticas fixadas, cenários e configurações físicas
-├── rodar_tudo.py     # Pipeline automatizado de execução e validação da suíte de testes
-├── resultados/       # Tabelas consolidadas em CSV (inclui a suíte verificacao.csv)
-├── figuras/          # Gráficos (F1 a F10)
-├── notebook.ipynb    # Caderno com análise passo a passo
-└── requirements.txt  # Especificação de dependências Python
+├── config.json       # Sementes fixadas, parâmetros dos cenários e configurações
+├── rodar_tudo.py     # Script principal que executa as simulações e a suíte de verificação
+├── resultados/       # Tabelas geradas em CSV e arquivos de contagens (inclui verificacao.csv)
+├── figuras/          # Gráficos gerados pelas simulações (F1 a F10)
+├── notebook.ipynb    # Caderno interativo com a análise passo a passo
+└── requirements.txt  # Dependências Python com versões fixadas
 ```
 
-O caderno interativo `notebook.ipynb` reproduz os passos analíticos: exame de um pseudoexperimento individual, repetição das 2000 simulações de Monte Carlo, análise de cobertura de intervalos, cancelamento local por compensação, correção instrumental de eficiência, modelagem cinemática nas etapas 2 e 3 e exibição da tabela de verificação. O notebook consome os dados pré-processados na pasta `resultados/`, sendo necessária a execução prévia do script `rodar_tudo.py`.
+O caderno `notebook.ipynb` apresenta o roteiro interativo do estudo: inspeção de um experimento individual, distribuição das 2000 repetições de Monte Carlo, curvas de cobertura dos intervalos de confiança, efeito de cancelamento local por compensação, impacto e correção de eficiência desigual, análise das Etapas 2 e 3 e leitura da tabela de verificação. Como o notebook lê as tabelas pré-computadas em `resultados/`, recomenda-se executar `rodar_tudo.py` antes de reexecutar as células.
 
-Para executar a reprodução integral dos experimentos numéricos, tabelas e gráficos (testado em ambiente Python 3.12, tempo de execução estimado de $\approx 2$ minutos com as sementes fixadas em `config.json`):
+Para reproduzir integralmente todas as tabelas, testes de verificação e figuras (testado em Python 3.12, tempo de execução de $\approx 2$ minutos com as sementes de `config.json`):
 
 ```bash
 pip install -r requirements.txt
